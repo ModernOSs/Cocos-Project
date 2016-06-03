@@ -11,6 +11,7 @@ Scene* Wonderland::createScene() {
     auto scene = Scene::createWithPhysics();
     scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
+	scene->getPhysicsWorld()->setAutoStep(false);
 
     auto layer = Wonderland::create();
     layer->setPhysicsWorld(scene->getPhysicsWorld());
@@ -128,6 +129,11 @@ void Wonderland::addMouseListener() {
 }
 
 void Wonderland::update(float f) {
+	// 物理世界控制
+	for (int i = 0; i < 3; ++i)
+	{
+		getScene()->getPhysicsWorld()->step(1 / 300.0f);
+	}
 	// 边界控制
 	if (player->getPosition().x <= 80 + player->getContentSize().width * 0.7 / 2 && velocity < 0 ||
 		player->getPosition().x >= visibleSize.width - 80 - player->getContentSize().width * 0.7 / 2 && velocity > 0)
