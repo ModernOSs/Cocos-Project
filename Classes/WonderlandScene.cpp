@@ -69,7 +69,7 @@ void Wonderland::addBackground() {
 			                   ground[i]->getContentSize().height * scale / 2);
 		ground[i]->setPhysicsBody(PhysicsBody::createBox(Size(ground[i]->getContentSize().width * scale * 0.67,
 			                                                  ground[i]->getContentSize().height * scale * 0.67),
-			                                             PhysicsMaterial(100.0f, 0.0f, 0.0f)));
+			                                             PhysicsMaterial(100.0f, 1.0f, 0.0f)));
 		ground[i]->getPhysicsBody()->setDynamic(false);
 		// 地块的Tag为1
 		ground[i]->setTag(1);
@@ -126,6 +126,9 @@ void Wonderland::addMouseListener() {
 	auto mouseListener = EventListenerMouse::create();
 	mouseListener->onMouseMove = CC_CALLBACK_1(Wonderland::mouseMove, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
+	auto clickListener = EventListenerMouse::create();
+	clickListener->onMouseDown = CC_CALLBACK_1(Wonderland::mouseClick, this);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(clickListener, this);
 }
 
 void Wonderland::update(float f) {
@@ -150,11 +153,6 @@ void Wonderland::update(float f) {
 		count = 0;
 		circle->runAction(RotateTo::create(0.2f, -(player->getPosition() - mousePosition).getAngle() * 180 / 3.1415926 + 90));
 	}
-
-	// 纵向速度控制
-	for (int i = 0; i < 25; i++)
-	    if (player->getBoundingBox().intersectsRect(ground[i]->getBoundingBox()))
-		    player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, 0));
 }
 
 bool Wonderland::onContactBegan(PhysicsContact& contact) {
@@ -165,6 +163,18 @@ bool Wonderland::onContactBegan(PhysicsContact& contact) {
 void Wonderland::mouseMove(Event* event) {
 	EventMouse* e = (EventMouse*)event;
 	mousePosition = Vec2(e->getCursorX(), e->getCursorY());
+}
+
+void Wonderland::mouseClick(Event* event) {
+	Sprite* bullet = Sprite::create("bullet.png");
+	bullet->setScale(scale * 0.335);
+	Vec2 temp = mousePosition - player->getPosition();
+	temp = 200 * temp / temp.getLength();
+	bullet->setPosition(player->getPosition() + temp);
+	bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * scale * 0.22, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
+	bullet->getPhysicsBody()->setGravityEnable(false);
+	bullet->getPhysicsBody()->setVelocity(temp * 4);
+	this->addChild(bullet);
 }
 
 void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {

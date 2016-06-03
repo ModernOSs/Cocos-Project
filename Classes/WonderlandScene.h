@@ -43,6 +43,7 @@ private:
 
 	bool onContactBegan(PhysicsContact& contact);
 	void mouseMove(Event* event);
+	void mouseClick(Event* event);
     void onKeyPressed(EventKeyboard::KeyCode code, Event* event);
     void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
 };
