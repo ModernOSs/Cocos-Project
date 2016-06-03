@@ -9,7 +9,7 @@ void Wonderland::setPhysicsWorld(PhysicsWorld* world) { m_world = world; }
 
 Scene* Wonderland::createScene() {
     auto scene = Scene::createWithPhysics();
-    // scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
 
     auto layer = Wonderland::create();
@@ -66,18 +66,18 @@ void Wonderland::addBackground() {
 		ground[i]->setScale(scale, scale);
 		ground[i]->setPosition(i * ground[i]->getContentSize().width * scale + ground[i]->getContentSize().width * scale / 2,
 			                   ground[i]->getContentSize().height * scale / 2);
+		ground[i]->setPhysicsBody(PhysicsBody::createBox(Size(ground[i]->getContentSize().width * scale * 0.67,
+			                                                  ground[i]->getContentSize().height * scale * 0.67),
+			                                             PhysicsMaterial(100.0f, 0.0f, 0.0f)));
+		ground[i]->getPhysicsBody()->setDynamic(false);
+		// 地块的Tag为1
+		ground[i]->setTag(1);
+		// 设置掩码
+		ground[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
+		ground[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
+		ground[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(ground[i], 0);
 	}
-    ground[12]->setPhysicsBody(PhysicsBody::createBox(Size(ground[12]->getContentSize().width * scale * 0.68 * 25,
-		                                                   ground[12]->getContentSize().height * scale * 0.66),
-			                                          PhysicsMaterial(1.0f, 0.0f, 0.0f)));
-	ground[12]->getPhysicsBody()->setDynamic(false);
-	// 地块的Tag为1
-	ground[12]->setTag(1);
-	// 设置掩码
-	ground[12]->getPhysicsBody()->setCategoryBitmask(0xFF);
-	ground[12]->getPhysicsBody()->setCollisionBitmask(0xFF);
-	ground[12]->getPhysicsBody()->setContactTestBitmask(0xFF);
 
 	isPlayerOnGround = Sprite::create("isPlayerOnGround.png");
 	isPlayerOnGround->setScale(scale * 25, scale);
@@ -88,7 +88,7 @@ void Wonderland::addBackground() {
 }
 
 void Wonderland::addPlayer() {
-	player = Sprite::create("alienGreen_front.png");
+	player = Sprite::create("alienGreen_walk0.png");
 	circle = Sprite::create("circle.png");
 	player->setScale(scale);
 	circle->setScale(scale * 0.8);
@@ -144,6 +144,11 @@ void Wonderland::update(float f) {
 		count = 0;
 		circle->runAction(RotateTo::create(0.2f, -(player->getPosition() - mousePosition).getAngle() * 180 / 3.1415926 + 90));
 	}
+
+	// 纵向速度控制
+	for (int i = 0; i < 25; i++)
+	    if (player->getBoundingBox().intersectsRect(ground[i]->getBoundingBox()))
+		    player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, 0));
 }
 
 bool Wonderland::onContactBegan(PhysicsContact& contact) {
