@@ -20,11 +20,13 @@ public:
 private:
     //“Ù¿÷º”‘ÿ”Î≤•∑≈
     Sprite* player;
+	Sprite* circle;
 	int velocity = 0;
 	Sprite* ground[25];
 	Sprite* isPlayerOnGround;
 	PhysicsWorld* m_world;
 	Size visibleSize;
+	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
 
     void preloadMusic();
@@ -35,10 +37,12 @@ private:
 
 	void addContactListener();
 	void addKeyboardListener();
+	void addMouseListener();
 
 	void update(float f);
 
 	bool onContactBegan(PhysicsContact& contact);
+	void mouseMove(Event* event);
     void onKeyPressed(EventKeyboard::KeyCode code, Event* event);
     void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
 };

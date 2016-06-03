@@ -9,7 +9,7 @@ void Wonderland::setPhysicsWorld(PhysicsWorld* world) { m_world = world; }
 
 Scene* Wonderland::createScene() {
     auto scene = Scene::createWithPhysics();
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    // scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
 
     auto layer = Wonderland::create();
@@ -34,8 +34,9 @@ bool Wonderland::init() {
 
 	addContactListener();
     addKeyboardListener();
+	addMouseListener();
 
-    this->schedule(schedule_selector(Wonderland::update), 0.04);
+    this->schedule(schedule_selector(Wonderland::update), 0.01);
 
     return true;
 }
@@ -82,14 +83,17 @@ void Wonderland::addBackground() {
 	isPlayerOnGround->setScale(scale * 25, scale);
 	isPlayerOnGround->setPosition(ground[12]->getPosition() + Vec2(0, isPlayerOnGround->getContentSize().height * scale / 2 +
 		                                                              ground[12]->getContentSize().height * scale / 2));
-	// isPlayerOnGround->setOpacity(0);
+	isPlayerOnGround->setOpacity(0);
 	this->addChild(isPlayerOnGround, 0);
 }
 
 void Wonderland::addPlayer() {
 	player = Sprite::create("alienGreen_front.png");
+	circle = Sprite::create("circle.png");
 	player->setScale(scale);
+	circle->setScale(scale * 0.8);
 	player->setAnchorPoint(Vec2(0.5, 0.5));
+	circle->setAnchorPoint(Vec2(0.5, 0.5));
 	player->setPhysicsBody(PhysicsBody::createBox(player->getContentSize() * scale * 0.7, PhysicsMaterial(1.0f, 0.0f, 0.0f)));
 	player->setPosition(visibleSize / 2);
 	player->getPhysicsBody()->setAngularVelocityLimit(0);
@@ -100,6 +104,7 @@ void Wonderland::addPlayer() {
 	player->getPhysicsBody()->setCategoryBitmask(0xFF);
 	player->getPhysicsBody()->setCollisionBitmask(0xFF);
 	player->getPhysicsBody()->setContactTestBitmask(0xFF);
+	this->addChild(circle);
 	this->addChild(player);
 }
 
@@ -110,23 +115,45 @@ void Wonderland::addContactListener() {
 }
 
 void Wonderland::addKeyboardListener() {
-    auto keboardListener = EventListenerKeyboard::create();
-    keboardListener->onKeyPressed = CC_CALLBACK_2(Wonderland::onKeyPressed, this);
-    keboardListener->onKeyReleased = CC_CALLBACK_2(Wonderland::onKeyReleased, this);
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(keboardListener, this);
+    auto keyboardListener = EventListenerKeyboard::create();
+    keyboardListener->onKeyPressed = CC_CALLBACK_2(Wonderland::onKeyPressed, this);
+    keyboardListener->onKeyReleased = CC_CALLBACK_2(Wonderland::onKeyReleased, this);
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
+}
+
+void Wonderland::addMouseListener() {
+	auto mouseListener = EventListenerMouse::create();
+	mouseListener->onMouseMove = CC_CALLBACK_1(Wonderland::mouseMove, this);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 }
 
 void Wonderland::update(float f) {
+	// ±ß½ç¿ØÖÆ
 	if (player->getPosition().x <= 80 + player->getContentSize().width * 0.7 / 2 && velocity < 0 ||
 		player->getPosition().x >= visibleSize.width - 80 - player->getContentSize().width * 0.7 / 2 && velocity > 0)
 		player->getPhysicsBody()->setVelocity(Vec2(0, player->getPhysicsBody()->getVelocity().y));
 	else
 		player->getPhysicsBody()->setVelocity(Vec2(velocity, player->getPhysicsBody()->getVelocity().y));
+
+	// Ãé×¼Æ÷¿ØÖÆ
+	circle->setPosition(player->getPosition());
+	static int count = 0;
+	count++;
+	if (count == 20)
+	{
+		count = 0;
+		circle->runAction(RotateTo::create(0.2f, -(player->getPosition() - mousePosition).getAngle() * 180 / 3.1415926 + 90));
+	}
 }
 
 bool Wonderland::onContactBegan(PhysicsContact& contact) {
 	// Áô¿Õ
 	return true;
+}
+
+void Wonderland::mouseMove(Event* event) {
+	EventMouse* e = (EventMouse*)event;
+	mousePosition = Vec2(e->getCursorX(), e->getCursorY());
 }
 
 void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
