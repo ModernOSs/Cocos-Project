@@ -9,7 +9,7 @@ void Wonderland::setPhysicsWorld(PhysicsWorld* world) { m_world = world; }
 
 Scene* Wonderland::createScene() {
     auto scene = Scene::createWithPhysics();
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    // scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
 	scene->getPhysicsWorld()->setAutoStep(false);
 
@@ -85,11 +85,11 @@ void Wonderland::addBackground() {
 	}
 
 	isPlayerOnGround[0] = Sprite::create("isPlayerOnGround.png");
-	isPlayerOnGround[0]->setScale(scale * 25, scale);
+	isPlayerOnGround[0]->setScale(scale * 24, scale);
 	isPlayerOnGround[0]->setPosition(ground[12]->getPosition() + Vec2(0, isPlayerOnGround[0]->getContentSize().height * scale / 2 +
 		                             ground[12]->getContentSize().height * scale / 2));
 
-	// isPlayerOnGround[0]->setOpacity(0);
+	isPlayerOnGround[0]->setOpacity(0);
 	this->addChild(isPlayerOnGround[0], 0);
 
 	// 设置石块
@@ -97,7 +97,7 @@ void Wonderland::addBackground() {
 	{
 		stone[i] = Sprite::create("stoneCenter.png");
 		stone[i]->setScale(scale, scale);
-		stone[i]->setPosition(ground[8 + i]->getPosition() + Vec2(0, stone[i]->getContentSize().height * 2.5));
+		stone[i]->setPosition(ground[8 + i]->getPosition() + Vec2(0, stone[i]->getContentSize().height * 4));
 		stone[i]->setPhysicsBody(PhysicsBody::createBox(Size(stone[i]->getContentSize().width * scale * 0.67,
 			                                                 stone[i]->getContentSize().height * scale * 0.67),
 			                                            PhysicsMaterial(100.0f, 1.0f, 0.3f)));
@@ -112,11 +112,11 @@ void Wonderland::addBackground() {
 	}
 
 	isPlayerOnGround[1] = Sprite::create("isPlayerOnGround.png");
-	isPlayerOnGround[1]->setScale(scale * 11, scale);
+	isPlayerOnGround[1]->setScale(scale * 10, scale);
 	isPlayerOnGround[1]->setPosition(stone[5]->getPosition() + Vec2(0, isPlayerOnGround[1]->getContentSize().height * scale / 2 +
 		                             stone[5]->getContentSize().height * scale / 2));
 
-	// isPlayerOnGround[1]->setOpacity(0);
+	isPlayerOnGround[1]->setOpacity(0);
 	this->addChild(isPlayerOnGround[1], 0);
 }
 
@@ -125,10 +125,13 @@ void Wonderland::addPlayer() {
 	circle = Sprite::create("circle.png");
 	player->setScale(scale);
 	circle->setScale(scale * 0.8);
-	player->setAnchorPoint(Vec2(0.5, 0.5));
+	player->setAnchorPoint(Vec2(0.5, 0.3));
 	circle->setAnchorPoint(Vec2(0.5, 0.5));
-	player->setPhysicsBody(PhysicsBody::createBox(player->getContentSize() * scale * 0.7f, PhysicsMaterial(1.0f, 0.0f, 0.0f)));
-	player->setPosition(visibleSize / 2);
+	player->setPhysicsBody(PhysicsBody::createBox(Size(player->getContentSize().width * scale * 0.4f,
+		                                               player->getContentSize().height * scale * 0.4f),
+	                                              PhysicsMaterial(1.0f, 0.0f, 0.0f),
+		                                          Vec2(0, -50)));
+	player->setPosition(Vec2(visibleSize.width * 0.15, visibleSize.height / 2));
 	player->getPhysicsBody()->setAngularVelocityLimit(0);
 	player->getPhysicsBody()->setRotationEnable(false);
 	// 玩家的Tag为0
@@ -205,19 +208,62 @@ void Wonderland::update(float f) {
 		upperBound->setPosition(visibleSize.width / 2, visibleSize.height);
 		upperBound->setPhysicsBody(PhysicsBody::createBox(upperBound->getContentSize() * scale * 0.67));
 		upperBound->getPhysicsBody()->setDynamic(false);
+		upperBound->getPhysicsBody()->setCategoryBitmask(0xF0);
+		upperBound->getPhysicsBody()->setCollisionBitmask(0xFF);
+		upperBound->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(upperBound);
 
-		auto box = Sprite::create("boxCrate_double.png");
+		Sprite* chain = Sprite::create("chain.png");
+		chain->setScale(scale, scale);
+		chain->setPhysicsBody(PhysicsBody::createBox(Size(10.0f, chain->getContentSize().height * scale * 0.67),
+			                                         PhysicsMaterial(1.0f, 0.8f, 0.5f)));
+		chain->setPosition(visibleSize.width / 2, upperBound->getBoundingBox().getMinY()- chain->getContentSize().height * scale / 2);
+		// 设置掩码
+		chain->getPhysicsBody()->setCategoryBitmask(0x0F);
+		chain->getPhysicsBody()->setCollisionBitmask(0x0F);
+		chain->getPhysicsBody()->setContactTestBitmask(0xFF);
+		chain->setTag(4);
+		this->addChild(chain);
+
+		Sprite* chain_2 = Sprite::create("chain.png");
+		chain_2->setScale(scale, scale);
+		chain_2->setPhysicsBody(PhysicsBody::createBox(Size(10.0f, chain->getContentSize().height * scale * 0.67),
+			PhysicsMaterial(1.0f, 0.2f, 0.5f)));
+		chain_2->setPosition(visibleSize.width / 2, chain->getBoundingBox().getMinY() - chain_2->getContentSize().height * scale / 2);
+		// 设置掩码
+		chain_2->getPhysicsBody()->setCategoryBitmask(0xF0);
+		chain_2->getPhysicsBody()->setCollisionBitmask(0xF0);
+		chain_2->getPhysicsBody()->setContactTestBitmask(0xFF);
+		chain_2->setTag(4);
+		this->addChild(chain_2);
+
+		box = Sprite::create("boxCrate_double.png");
 		box->setScale(scale, scale);
-		box->setPosition(visibleSize.width / 2, visibleSize.height - 400);
-		box->setPhysicsBody(PhysicsBody::createBox(box->getContentSize() * scale * 0.67, PhysicsMaterial(1.0f, 0.2f, 0.5f)));
+		box->setPosition(visibleSize.width / 2, chain_2->getBoundingBox().getMinY() - box->getContentSize().height * scale / 2);
+		box->setPhysicsBody(PhysicsBody::createBox(box->getContentSize() * scale * 0.67, PhysicsMaterial(0.3f, 0.2f, 0.8f)));
+		box->getPhysicsBody()->setCategoryBitmask(0xFF);
+		box->getPhysicsBody()->setCollisionBitmask(0x0F);
+		box->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(box);
 
-		auto chain = PhysicsJointDistance::construct(upperBound->getPhysicsBody(), box->getPhysicsBody(),
-			                                         upperBound->getAnchorPoint(), box->getAnchorPoint());
-		Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(chain);
+		isPlayerOnGround[2] = Sprite::create("isPlayerOnBox.png");
+		isPlayerOnGround[2]->setScale(1.7, 1.7);
+		isPlayerOnGround[2]->setPosition(box->getPosition());
+		isPlayerOnGround[2]->setOpacity(0);
+		this->addChild(isPlayerOnGround[2]);
+
+		auto fixedpoint_1 = PhysicsJointPin::construct(upperBound->getPhysicsBody(), chain->getPhysicsBody(),Vec2(upperBound->getPosition().x, upperBound->getBoundingBox().getMinY()));
+		Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(fixedpoint_1);
+		connect	 = PhysicsJointPin::construct(chain->getPhysicsBody(), chain_2->getPhysicsBody(), Vec2(chain->getPosition().x, chain->getBoundingBox().getMinY()));
+		Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(connect);
+		auto fixedpoint_2 = PhysicsJointPin::construct(chain_2->getPhysicsBody(), box->getPhysicsBody(), Vec2(box->getPosition().x, box->getBoundingBox().getMaxY()));
+		Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(fixedpoint_2);
 	}
 	initial = 0;
+
+	if (box->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
+		box->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
+		isPlayerOnGround[2]->setPosition(box->getPosition());
 }
 
 bool Wonderland::onContactBegan(PhysicsContact& contact) {
@@ -242,6 +288,21 @@ bool Wonderland::onContactBegan(PhysicsContact& contact) {
 				{
 					sp2->removeFromParentAndCleanup(true);
 					sp2 = NULL;
+				}
+			}
+
+			if (!isChainBroken) {
+				if ((sp1->getTag() == 4 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 4)) {
+					Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(connect, true);
+					if (sp1->getTag() == 2) {
+						sp1->removeFromParentAndCleanup(true);
+						sp1 = NULL;
+					}
+					if (sp2->getTag() == 2) {
+						sp2->removeFromParentAndCleanup(true);
+						sp2 = NULL;
+					}
+					isChainBroken = 1;
 				}
 			}
 		}
@@ -271,7 +332,7 @@ void Wonderland::mouseClick(Event* event) {
 		bullet->setPosition(player->getPosition() + temp);
 		bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * scale * 0.22, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
 		bullet->getPhysicsBody()->setGravityEnable(false);
-		bullet->getPhysicsBody()->setVelocity(temp * 4);
+		bullet->getPhysicsBody()->setVelocity(temp * 8);
 		// 子弹的Tag为2
 		bullet->setTag(2);
 		// 设置掩码
@@ -296,6 +357,7 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		player->stopAllActions();
 		player->runAction(RepeatForever::create(action_walk));
 		velocity -= 600;
+		keyCount++;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_D:
@@ -306,14 +368,20 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		player->stopAllActions();
 		player->runAction(RepeatForever::create(action_walk));
 		velocity += 600;
+		keyCount++;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_W:
 		if (player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
-			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
+			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()) ||
+			player->getBoundingBox().intersectsRect(isPlayerOnGround[2]->getBoundingBox()))
 			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, 1440));
 		player->stopAllActions();
-		player->runAction(RepeatForever::create(action_jump));
+		player->runAction(action_jump);
+		if (keyCount >= 0)
+			player->runAction(Sequence::create(DelayTime::create(1.0f), action_walk, NULL));
+		else
+			player->runAction(Sequence::create(DelayTime::create(1.0f), action_stand, NULL));
 		break;
 	default:
 		break;
@@ -326,14 +394,22 @@ void Wonderland::onKeyReleased(EventKeyboard::KeyCode code, Event* event) {
 	{
 	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_A:
-		player->stopAllActions();
-		player->runAction(action_stand);
+		keyCount--;
+		if (keyCount == 0)
+		{
+			player->stopAllActions();
+			player->runAction(RepeatForever::create(action_stand));
+		}
 		velocity += 600;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_D:
-		player->stopAllActions();
-		player->runAction(action_stand);
+		keyCount--;
+		if (keyCount == 0)
+		{
+			player->stopAllActions();
+			player->runAction(RepeatForever::create(action_stand));
+		}
 		velocity -= 600;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
@@ -360,6 +436,7 @@ void Wonderland::initaction() {
 	}
 	animation_walk->setDelayPerUnit(0.1f);
 	animation_walk->setRestoreOriginalFrame(true);
+	animation_walk->setLoops(1024);
 	action_walk = Animate::create(animation_walk);
 
 	// jump

@@ -25,12 +25,17 @@ private:
 	int velocity = 0;
 	Sprite* ground[25];
 	Sprite* stone[11];
+	Sprite* box;
 	Sprite* isPlayerOnGround[16];
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
+	PhysicsJointPin* connect;
+	bool isChainBroken = 0;
+
 	// ¶¯»­
+	int keyCount = 0;
 	Animation *animation_stand;
 	Animate *action_stand;
 	Animation *animation_walk;
