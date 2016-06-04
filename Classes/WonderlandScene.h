@@ -29,12 +29,22 @@ private:
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
+	//action
+	Animation *animation_stand;
+	Animate *action_stand;
+	Animation *animation_walk;
+	Animate *action_walk;
+	Animation *animation_jump;
+	Animate *action_jump;
+	Animation *animation_hit;
+	Animate *action_hit;
 
     void preloadMusic();
     void playBgm();
 
     void addBackground();
 	void addPlayer();
+	void initaction();
 
 	void addCamera();
 

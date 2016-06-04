@@ -201,16 +201,28 @@ bool Wonderland::onContactBegan(PhysicsContact& contact) {
 	auto sp2 = (Sprite*)bodyB->getNode();
 
 	// 子弹碰土块
-	log("%d %d", sp1->getTag(), sp2->getTag());
-	if (sp1 != NULL && sp2 != NULL)
+	try
 	{
-		if ((sp1->getTag() == 1 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 1))
+		if (sp1 != NULL && sp2 != NULL)
 		{
-			sp1->removeFromParentAndCleanup(true);
-			sp1 = NULL;
-			sp2->removeFromParentAndCleanup(true);
-			sp2 = NULL;
+			if ((sp1->getTag() == 1 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 1))
+			{
+				if (sp1 != NULL)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					sp1 = NULL;
+				}
+				if (sp2 != NULL)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					sp2 = NULL;
+				}
+			}
 		}
+	}
+	catch (exception err)
+	{
+		// 解决C++的异步出错
 	}
 	return true;
 }
@@ -245,14 +257,26 @@ void Wonderland::mouseClick(Event* event) {
 }
 
 void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
+	initaction();
+	static char lastcid = 'D';
     switch (code)
     {
     case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
     case cocos2d::EventKeyboard::KeyCode::KEY_A:
+		if (lastcid != 'A') {
+			player->setFlipX(true);
+		}
+		lastcid = 'A';
+		player->runAction(RepeatForever::create(action_walk));
 		velocity -= 600;
         break;
     case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
     case cocos2d::EventKeyboard::KeyCode::KEY_D:
+		if (lastcid != 'D') {
+			player->setFlipX(false);
+		}
+		lastcid = 'D';
+		player->runAction(RepeatForever::create(action_walk));
 		velocity += 600;
         break;
     case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
@@ -260,6 +284,7 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		if (player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
 		    player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, 1440));
+		player->runAction(RepeatForever::create(action_jump));
         break;
     default:
         break;
@@ -267,6 +292,9 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 }
 
 void Wonderland::onKeyReleased(EventKeyboard::KeyCode code, Event* event) {
+	initaction();
+	player->stopAllActions();
+	player->runAction(action_stand);
     switch (code)
     {
     case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
@@ -280,4 +308,33 @@ void Wonderland::onKeyReleased(EventKeyboard::KeyCode code, Event* event) {
     default:
         break;
     }
+}
+
+void Wonderland::initaction() {
+	//walk
+	animation_walk = Animation::create();
+	for (int i = 1; i < 3; i++)
+	{
+		char imageFileName[128];
+		sprintf(imageFileName, "alienGreen_walk%d.png", i);
+		animation_walk->addSpriteFrameWithFileName(imageFileName);
+	}
+	animation_walk->setDelayPerUnit(0.1f);
+	animation_walk->setRestoreOriginalFrame(true);
+	action_walk = Animate::create(animation_walk);
+
+	//jump
+	animation_jump = Animation::create();
+	animation_jump->addSpriteFrameWithFileName("alienGreen_jump.png");
+	animation_jump->setDelayPerUnit(1.0f);
+	animation_jump->setRestoreOriginalFrame(true);
+	action_jump = Animate::create(animation_jump);
+
+	//stand
+	animation_stand = Animation::create();
+	animation_stand->addSpriteFrameWithFileName("alienGreen_walk0.png");
+	animation_stand->setDelayPerUnit(10.0f);
+	animation_stand->setRestoreOriginalFrame(true);
+	action_stand = Animate::create(animation_stand);
+
 }
