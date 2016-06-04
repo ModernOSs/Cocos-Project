@@ -291,17 +291,19 @@ bool Wonderland::onContactBegan(PhysicsContact& contact) {
 				}
 			}
 
-			if (!isChainBroken) {
+			if (!isChainBroken && sp1 != NULL && sp2 != NULL) {
 				if ((sp1->getTag() == 4 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 4)) {
 					Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(connect, true);
-					if (sp1->getTag() == 2) {
-						sp1->removeFromParentAndCleanup(true);
-						sp1 = NULL;
-					}
-					if (sp2->getTag() == 2) {
-						sp2->removeFromParentAndCleanup(true);
-						sp2 = NULL;
-					}
+					if (sp1 != NULL)
+						if (sp1->getTag() == 2) {
+							sp1->removeFromParentAndCleanup(true);
+							sp1 = NULL;
+						}
+					if (sp2 != NULL)
+						if (sp2->getTag() == 2) {
+							sp2->removeFromParentAndCleanup(true);
+							sp2 = NULL;
+						}
 					isChainBroken = 1;
 				}
 			}
