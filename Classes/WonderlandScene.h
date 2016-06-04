@@ -10,6 +10,7 @@ public:
 	void setPhysicsWorld(PhysicsWorld * world);
 	// there's no 'id' in cpp, so we recommend returning the class instance pointer
     static cocos2d::Scene* createScene();
+	static PhysicsWorld* world;
 
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
     virtual bool init();
@@ -29,7 +30,7 @@ private:
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
-	//action
+	// ¶¯»­
 	Animation *animation_stand;
 	Animate *action_stand;
 	Animation *animation_walk;

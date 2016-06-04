@@ -53,6 +53,7 @@ void Wonderland::playBgm() {
 }
 
 void Wonderland::addBackground() {
+	// 设置背景
 	Sprite* background[3];
 	for (unsigned int i = 0; i < 3; i++)
 	{
@@ -63,6 +64,7 @@ void Wonderland::addBackground() {
 		this->addChild(background[i], 0);
 	}
 
+	// 设置土块
 	for (unsigned int i = 0; i < 25; i++)
 	{
 		ground[i] = Sprite::create("grassCenter.png");
@@ -71,7 +73,7 @@ void Wonderland::addBackground() {
 			                   ground[i]->getContentSize().height * scale / 2);
 		ground[i]->setPhysicsBody(PhysicsBody::createBox(Size(ground[i]->getContentSize().width * scale * 0.67,
 			                                                  ground[i]->getContentSize().height * scale * 0.67),
-			                                             PhysicsMaterial(100.0f, 1.0f, 0.0f)));
+			                                             PhysicsMaterial(100.0f, 1.0f, 0.5f)));
 		ground[i]->getPhysicsBody()->setDynamic(false);
 		// 地块的Tag为1
 		ground[i]->setTag(1);
@@ -90,6 +92,7 @@ void Wonderland::addBackground() {
 	// isPlayerOnGround[0]->setOpacity(0);
 	this->addChild(isPlayerOnGround[0], 0);
 
+	// 设置石块
 	for (unsigned int i = 0; i < 11; i++)
 	{
 		stone[i] = Sprite::create("stoneCenter.png");
@@ -97,7 +100,7 @@ void Wonderland::addBackground() {
 		stone[i]->setPosition(ground[8 + i]->getPosition() + Vec2(0, stone[i]->getContentSize().height * 2.5));
 		stone[i]->setPhysicsBody(PhysicsBody::createBox(Size(stone[i]->getContentSize().width * scale * 0.67,
 			                                                 stone[i]->getContentSize().height * scale * 0.67),
-			                                            PhysicsMaterial(100.0f, 1.0f, 0.0f)));
+			                                            PhysicsMaterial(100.0f, 1.0f, 0.3f)));
 		stone[i]->getPhysicsBody()->setDynamic(false);
 		// 石块的Tag为3
 		stone[i]->setTag(3);
@@ -192,6 +195,29 @@ void Wonderland::update(float f) {
 		count = 0;
 		circle->runAction(RotateTo::create(0.2f, -(player->getPosition() - mousePosition).getAngle() * 180 / 3.1415926 + 90));
 	}
+
+	// 添加铰链
+	static bool initial = 1;
+	if (initial)
+	{
+		auto upperBound = Sprite::create("stoneCenter.png");
+		upperBound->setScale(scale, scale);
+		upperBound->setPosition(visibleSize.width / 2, visibleSize.height);
+		upperBound->setPhysicsBody(PhysicsBody::createBox(upperBound->getContentSize() * scale * 0.67));
+		upperBound->getPhysicsBody()->setDynamic(false);
+		this->addChild(upperBound);
+
+		auto box = Sprite::create("boxCrate_double.png");
+		box->setScale(scale, scale);
+		box->setPosition(visibleSize.width / 2, visibleSize.height - 400);
+		box->setPhysicsBody(PhysicsBody::createBox(box->getContentSize() * scale * 0.67, PhysicsMaterial(1.0f, 0.2f, 0.5f)));
+		this->addChild(box);
+
+		auto chain = PhysicsJointDistance::construct(upperBound->getPhysicsBody(), box->getPhysicsBody(),
+			                                         upperBound->getAnchorPoint(), box->getAnchorPoint());
+		Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(chain);
+	}
+	initial = 0;
 }
 
 bool Wonderland::onContactBegan(PhysicsContact& contact) {
@@ -259,55 +285,68 @@ void Wonderland::mouseClick(Event* event) {
 void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 	initaction();
 	static char lastcid = 'D';
-    switch (code)
-    {
-    case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-    case cocos2d::EventKeyboard::KeyCode::KEY_A:
+	switch (code)
+	{
+	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+	case cocos2d::EventKeyboard::KeyCode::KEY_A:
 		if (lastcid != 'A') {
 			player->setFlipX(true);
 		}
 		lastcid = 'A';
+		player->stopAllActions();
 		player->runAction(RepeatForever::create(action_walk));
 		velocity -= 600;
-        break;
-    case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-    case cocos2d::EventKeyboard::KeyCode::KEY_D:
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+	case cocos2d::EventKeyboard::KeyCode::KEY_D:
 		if (lastcid != 'D') {
 			player->setFlipX(false);
 		}
 		lastcid = 'D';
+		player->stopAllActions();
 		player->runAction(RepeatForever::create(action_walk));
 		velocity += 600;
-        break;
-    case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
-    case cocos2d::EventKeyboard::KeyCode::KEY_W:
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+	case cocos2d::EventKeyboard::KeyCode::KEY_W:
 		if (player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
-		    player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, 1440));
+			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, 1440));
+		player->stopAllActions();
 		player->runAction(RepeatForever::create(action_jump));
-        break;
-    default:
-        break;
-    }
+		break;
+	default:
+		break;
+	}
 }
 
 void Wonderland::onKeyReleased(EventKeyboard::KeyCode code, Event* event) {
 	initaction();
-	player->stopAllActions();
-	player->runAction(action_stand);
-    switch (code)
-    {
-    case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-    case cocos2d::EventKeyboard::KeyCode::KEY_A:
+	switch (code)
+	{
+	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+	case cocos2d::EventKeyboard::KeyCode::KEY_A:
+		player->stopAllActions();
+		player->runAction(action_stand);
 		velocity += 600;
-        break;
-    case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-    case cocos2d::EventKeyboard::KeyCode::KEY_D:
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+	case cocos2d::EventKeyboard::KeyCode::KEY_D:
+		player->stopAllActions();
+		player->runAction(action_stand);
 		velocity -= 600;
-        break;
-    default:
-        break;
-    }
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+	case cocos2d::EventKeyboard::KeyCode::KEY_W:
+		player->stopAllActions();
+		if (velocity == 0)
+			player->runAction(RepeatForever::create(action_stand));
+		else
+			player->runAction(RepeatForever::create(action_walk));
+		break;
+	default:
+		break;
+	}
 }
 
 void Wonderland::initaction() {
@@ -323,18 +362,24 @@ void Wonderland::initaction() {
 	animation_walk->setRestoreOriginalFrame(true);
 	action_walk = Animate::create(animation_walk);
 
-	//jump
+	// jump
 	animation_jump = Animation::create();
 	animation_jump->addSpriteFrameWithFileName("alienGreen_jump.png");
 	animation_jump->setDelayPerUnit(1.0f);
 	animation_jump->setRestoreOriginalFrame(true);
 	action_jump = Animate::create(animation_jump);
 
-	//stand
+	// stand
 	animation_stand = Animation::create();
 	animation_stand->addSpriteFrameWithFileName("alienGreen_walk0.png");
 	animation_stand->setDelayPerUnit(10.0f);
 	animation_stand->setRestoreOriginalFrame(true);
 	action_stand = Animate::create(animation_stand);
 
+	// hit
+	animation_hit = Animation::create();
+	animation_hit->addSpriteFrameWithFileName("alienGreen_hit.png");
+	animation_hit->setDelayPerUnit(10.0f);
+	animation_hit->setRestoreOriginalFrame(false);
+	action_hit = Animate::create(animation_hit);
 }
