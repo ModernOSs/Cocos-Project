@@ -33,11 +33,13 @@ bool Wonderland::init() {
     addBackground();
     addPlayer();
 
+	addCamera();
+
 	addContactListener();
     addKeyboardListener();
 	addMouseListener();
 
-    this->schedule(schedule_selector(Wonderland::update), 0.01);
+    this->schedule(schedule_selector(Wonderland::update), 0.01f);
 
     return true;
 }
@@ -80,12 +82,39 @@ void Wonderland::addBackground() {
 		this->addChild(ground[i], 0);
 	}
 
-	isPlayerOnGround = Sprite::create("isPlayerOnGround.png");
-	isPlayerOnGround->setScale(scale * 25, scale);
-	isPlayerOnGround->setPosition(ground[12]->getPosition() + Vec2(0, isPlayerOnGround->getContentSize().height * scale / 2 +
-		                                                              ground[12]->getContentSize().height * scale / 2));
-	isPlayerOnGround->setOpacity(0);
-	this->addChild(isPlayerOnGround, 0);
+	isPlayerOnGround[0] = Sprite::create("isPlayerOnGround.png");
+	isPlayerOnGround[0]->setScale(scale * 25, scale);
+	isPlayerOnGround[0]->setPosition(ground[12]->getPosition() + Vec2(0, isPlayerOnGround[0]->getContentSize().height * scale / 2 +
+		                             ground[12]->getContentSize().height * scale / 2));
+
+	// isPlayerOnGround[0]->setOpacity(0);
+	this->addChild(isPlayerOnGround[0], 0);
+
+	for (unsigned int i = 0; i < 11; i++)
+	{
+		stone[i] = Sprite::create("stoneCenter.png");
+		stone[i]->setScale(scale, scale);
+		stone[i]->setPosition(ground[8 + i]->getPosition() + Vec2(0, stone[i]->getContentSize().height * 2.5));
+		stone[i]->setPhysicsBody(PhysicsBody::createBox(Size(stone[i]->getContentSize().width * scale * 0.67,
+			                                                 stone[i]->getContentSize().height * scale * 0.67),
+			                                            PhysicsMaterial(100.0f, 1.0f, 0.0f)));
+		stone[i]->getPhysicsBody()->setDynamic(false);
+		// 石块的Tag为3
+		stone[i]->setTag(3);
+		// 设置掩码
+		stone[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
+		stone[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
+		stone[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
+		this->addChild(stone[i], 0);
+	}
+
+	isPlayerOnGround[1] = Sprite::create("isPlayerOnGround.png");
+	isPlayerOnGround[1]->setScale(scale * 11, scale);
+	isPlayerOnGround[1]->setPosition(stone[5]->getPosition() + Vec2(0, isPlayerOnGround[1]->getContentSize().height * scale / 2 +
+		                             stone[5]->getContentSize().height * scale / 2));
+
+	// isPlayerOnGround[1]->setOpacity(0);
+	this->addChild(isPlayerOnGround[1], 0);
 }
 
 void Wonderland::addPlayer() {
@@ -95,7 +124,7 @@ void Wonderland::addPlayer() {
 	circle->setScale(scale * 0.8);
 	player->setAnchorPoint(Vec2(0.5, 0.5));
 	circle->setAnchorPoint(Vec2(0.5, 0.5));
-	player->setPhysicsBody(PhysicsBody::createBox(player->getContentSize() * scale * 0.7, PhysicsMaterial(1.0f, 0.0f, 0.0f)));
+	player->setPhysicsBody(PhysicsBody::createBox(player->getContentSize() * scale * 0.7f, PhysicsMaterial(1.0f, 0.0f, 0.0f)));
 	player->setPosition(visibleSize / 2);
 	player->getPhysicsBody()->setAngularVelocityLimit(0);
 	player->getPhysicsBody()->setRotationEnable(false);
@@ -107,6 +136,12 @@ void Wonderland::addPlayer() {
 	player->getPhysicsBody()->setContactTestBitmask(0xFF);
 	this->addChild(circle);
 	this->addChild(player);
+}
+
+void Wonderland::addCamera() {
+	camera = Camera::create();
+	this->addChild(camera);
+	this->setCameraMask(1);
 }
 
 void Wonderland::addContactListener() {
@@ -132,14 +167,18 @@ void Wonderland::addMouseListener() {
 }
 
 void Wonderland::update(float f) {
+	// 摄像头位置控制
+	if (player->getPositionX() >= visibleSize.width / 2 && player->getPositionX() <= 3 * visibleSize.width / 2)
+		camera->setPositionX(player->getPositionX());
+
 	// 物理世界控制
 	for (int i = 0; i < 3; ++i)
 	{
 		getScene()->getPhysicsWorld()->step(1 / 300.0f);
 	}
-	// 边界控制
+	// 玩家速度控制
 	if (player->getPosition().x <= 80 + player->getContentSize().width * 0.7 / 2 && velocity < 0 ||
-		player->getPosition().x >= visibleSize.width - 80 - player->getContentSize().width * 0.7 / 2 && velocity > 0)
+		player->getPosition().x >= 2 * visibleSize.width - 80 - player->getContentSize().width * 0.7 / 2 && velocity > 0)
 		player->getPhysicsBody()->setVelocity(Vec2(0, player->getPhysicsBody()->getVelocity().y));
 	else
 		player->getPhysicsBody()->setVelocity(Vec2(velocity, player->getPhysicsBody()->getVelocity().y));
@@ -156,25 +195,53 @@ void Wonderland::update(float f) {
 }
 
 bool Wonderland::onContactBegan(PhysicsContact& contact) {
-	// 留空
+	auto bodyA = contact.getShapeA()->getBody();
+	auto bodyB = contact.getShapeB()->getBody();
+	auto sp1 = (Sprite*)bodyA->getNode();
+	auto sp2 = (Sprite*)bodyB->getNode();
+
+	// 子弹碰土块
+	log("%d %d", sp1->getTag(), sp2->getTag());
+	if (sp1 != NULL && sp2 != NULL)
+	{
+		if ((sp1->getTag() == 1 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 1))
+		{
+			sp1->removeFromParentAndCleanup(true);
+			sp1 = NULL;
+			sp2->removeFromParentAndCleanup(true);
+			sp2 = NULL;
+		}
+	}
 	return true;
 }
 
 void Wonderland::mouseMove(Event* event) {
 	EventMouse* e = (EventMouse*)event;
-	mousePosition = Vec2(e->getCursorX(), e->getCursorY());
+	mousePosition = Vec2(camera->getPositionX() - visibleSize.width / 2 + e->getCursorX(), e->getCursorY());
 }
 
 void Wonderland::mouseClick(Event* event) {
-	Sprite* bullet = Sprite::create("bullet.png");
-	bullet->setScale(scale * 0.335);
-	Vec2 temp = mousePosition - player->getPosition();
-	temp = 200 * temp / temp.getLength();
-	bullet->setPosition(player->getPosition() + temp);
-	bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * scale * 0.22, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
-	bullet->getPhysicsBody()->setGravityEnable(false);
-	bullet->getPhysicsBody()->setVelocity(temp * 4);
-	this->addChild(bullet);
+	// 解决摄像头导致的触发两次事件的问题
+	static bool doubleClick = false;
+	doubleClick = !doubleClick;
+	if (doubleClick)
+	{
+		Sprite* bullet = Sprite::create("bullet.png");
+		bullet->setScale(scale * 0.335);
+		Vec2 temp = mousePosition - player->getPosition();
+		temp = 200 * temp / temp.getLength();
+		bullet->setPosition(player->getPosition() + temp);
+		bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * scale * 0.22, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
+		bullet->getPhysicsBody()->setGravityEnable(false);
+		bullet->getPhysicsBody()->setVelocity(temp * 4);
+		// 子弹的Tag为2
+		bullet->setTag(2);
+		// 设置掩码
+		bullet->getPhysicsBody()->setCategoryBitmask(0xFF);
+		bullet->getPhysicsBody()->setCollisionBitmask(0xFF);
+		bullet->getPhysicsBody()->setContactTestBitmask(0xFF);
+		this->addChild(bullet);
+	}
 }
 
 void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
@@ -190,7 +257,8 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
         break;
     case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
     case cocos2d::EventKeyboard::KeyCode::KEY_W:
-		if (player->getBoundingBox().intersectsRect(isPlayerOnGround->getBoundingBox()))
+		if (player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
+			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
 		    player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, 1440));
         break;
     default:

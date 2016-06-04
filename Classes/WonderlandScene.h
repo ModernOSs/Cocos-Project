@@ -18,12 +18,13 @@ public:
     CREATE_FUNC(Wonderland);
 
 private:
-    //“Ù¿÷º”‘ÿ”Î≤•∑≈
+	Camera* camera;
     Sprite* player;
 	Sprite* circle;
 	int velocity = 0;
 	Sprite* ground[25];
-	Sprite* isPlayerOnGround;
+	Sprite* stone[11];
+	Sprite* isPlayerOnGround[16];
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
@@ -34,6 +35,8 @@ private:
 
     void addBackground();
 	void addPlayer();
+
+	void addCamera();
 
 	void addContactListener();
 	void addKeyboardListener();
