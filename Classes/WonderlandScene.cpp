@@ -9,7 +9,7 @@ void Wonderland::setPhysicsWorld(PhysicsWorld* world) { m_world = world; }
 
 Scene* Wonderland::createScene() {
     auto scene = Scene::createWithPhysics();
-    // scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
 	scene->getPhysicsWorld()->setAutoStep(false);
 
@@ -71,8 +71,8 @@ void Wonderland::addBackground() {
 		ground[i]->setScale(scale, scale);
 		ground[i]->setPosition(i * ground[i]->getContentSize().width * scale + ground[i]->getContentSize().width * scale / 2,
 			                   ground[i]->getContentSize().height * scale / 2);
-		ground[i]->setPhysicsBody(PhysicsBody::createBox(Size(ground[i]->getContentSize().width * scale * 0.67,
-			                                                  ground[i]->getContentSize().height * scale * 0.67),
+		ground[i]->setPhysicsBody(PhysicsBody::createBox(Size(ground[i]->getContentSize().width,
+			                                                  ground[i]->getContentSize().height),
 			                                             PhysicsMaterial(100.0f, 1.0f, 0.5f)));
 		ground[i]->getPhysicsBody()->setDynamic(false);
 		// 地块的Tag为1
@@ -89,7 +89,7 @@ void Wonderland::addBackground() {
 	isPlayerOnGround[0]->setPosition(ground[12]->getPosition() + Vec2(0, isPlayerOnGround[0]->getContentSize().height * scale / 2 +
 		                             ground[12]->getContentSize().height * scale / 2));
 
-	isPlayerOnGround[0]->setOpacity(0);
+	// isPlayerOnGround[0]->setOpacity(0);
 	this->addChild(isPlayerOnGround[0], 0);
 
 	// 设置石块
@@ -97,9 +97,9 @@ void Wonderland::addBackground() {
 	{
 		stone[i] = Sprite::create("stoneCenter.png");
 		stone[i]->setScale(scale, scale);
-		stone[i]->setPosition(ground[8 + i]->getPosition() + Vec2(0, stone[i]->getContentSize().height * 4));
-		stone[i]->setPhysicsBody(PhysicsBody::createBox(Size(stone[i]->getContentSize().width * scale * 0.67,
-			                                                 stone[i]->getContentSize().height * scale * 0.67),
+		stone[i]->setPosition(ground[8 + i]->getPosition() + Vec2(0, stone[i]->getContentSize().height * 2.5 * scale));
+		stone[i]->setPhysicsBody(PhysicsBody::createBox(Size(stone[i]->getContentSize().width,
+			                                                 stone[i]->getContentSize().height),
 			                                            PhysicsMaterial(100.0f, 1.0f, 0.3f)));
 		stone[i]->getPhysicsBody()->setDynamic(false);
 		// 石块的Tag为3
@@ -116,7 +116,7 @@ void Wonderland::addBackground() {
 	isPlayerOnGround[1]->setPosition(stone[5]->getPosition() + Vec2(0, isPlayerOnGround[1]->getContentSize().height * scale / 2 +
 		                             stone[5]->getContentSize().height * scale / 2));
 
-	isPlayerOnGround[1]->setOpacity(0);
+	// isPlayerOnGround[1]->setOpacity(0);
 	this->addChild(isPlayerOnGround[1], 0);
 }
 
@@ -127,10 +127,10 @@ void Wonderland::addPlayer() {
 	circle->setScale(scale * 0.8);
 	player->setAnchorPoint(Vec2(0.5, 0.3));
 	circle->setAnchorPoint(Vec2(0.5, 0.5));
-	player->setPhysicsBody(PhysicsBody::createBox(Size(player->getContentSize().width * scale * 0.4f,
-		                                               player->getContentSize().height * scale * 0.4f),
+	player->setPhysicsBody(PhysicsBody::createBox(Size(player->getContentSize().width * 0.8f,
+		                                               player->getContentSize().height * 0.65f),
 	                                              PhysicsMaterial(1.0f, 0.0f, 0.0f),
-		                                          Vec2(0, -50)));
+		                                          Vec2(0, -player->getContentSize().height * 0.2)));
 	player->setPosition(Vec2(visibleSize.width * 0.15, visibleSize.height / 2));
 	player->getPhysicsBody()->setAngularVelocityLimit(0);
 	player->getPhysicsBody()->setRotationEnable(false);
@@ -182,9 +182,11 @@ void Wonderland::update(float f) {
 	{
 		getScene()->getPhysicsWorld()->step(1 / 300.0f);
 	}
+	Director::getInstance()->getRunningScene()->getPhysicsWorld()->setGravity(Vec2(0, -visibleSize.height * 1.9140625f));
 	// 玩家速度控制
-	if (player->getPosition().x <= 80 + player->getContentSize().width * 0.7 / 2 && velocity < 0 ||
-		player->getPosition().x >= 2 * visibleSize.width - 80 - player->getContentSize().width * 0.7 / 2 && velocity > 0)
+	float offset = stone[0]->getContentSize().width * scale * 0.25;
+	if (player->getPosition().x <= offset + player->getContentSize().width * scale / 2 && velocity < 0 ||
+		player->getPosition().x >= 2 * visibleSize.width - offset - player->getContentSize().width * scale / 2 && velocity > 0)
 		player->getPhysicsBody()->setVelocity(Vec2(0, player->getPhysicsBody()->getVelocity().y));
 	else
 		player->getPhysicsBody()->setVelocity(Vec2(velocity, player->getPhysicsBody()->getVelocity().y));
@@ -206,7 +208,7 @@ void Wonderland::update(float f) {
 		auto upperBound = Sprite::create("stoneCenter.png");
 		upperBound->setScale(scale, scale);
 		upperBound->setPosition(visibleSize.width / 2, visibleSize.height);
-		upperBound->setPhysicsBody(PhysicsBody::createBox(upperBound->getContentSize() * scale * 0.67));
+		upperBound->setPhysicsBody(PhysicsBody::createBox(upperBound->getContentSize()));
 		upperBound->getPhysicsBody()->setDynamic(false);
 		upperBound->getPhysicsBody()->setCategoryBitmask(0xF0);
 		upperBound->getPhysicsBody()->setCollisionBitmask(0xFF);
@@ -215,7 +217,7 @@ void Wonderland::update(float f) {
 
 		Sprite* chain = Sprite::create("chain.png");
 		chain->setScale(scale, scale);
-		chain->setPhysicsBody(PhysicsBody::createBox(Size(10.0f, chain->getContentSize().height * scale * 0.67),
+		chain->setPhysicsBody(PhysicsBody::createBox(Size(10.0f, chain->getContentSize().height),
 			                                         PhysicsMaterial(1.0f, 0.8f, 0.5f)));
 		chain->setPosition(visibleSize.width / 2, upperBound->getBoundingBox().getMinY()- chain->getContentSize().height * scale / 2);
 		// 设置掩码
@@ -227,8 +229,8 @@ void Wonderland::update(float f) {
 
 		Sprite* chain_2 = Sprite::create("chain.png");
 		chain_2->setScale(scale, scale);
-		chain_2->setPhysicsBody(PhysicsBody::createBox(Size(10.0f, chain->getContentSize().height * scale * 0.67),
-			PhysicsMaterial(1.0f, 0.2f, 0.5f)));
+		chain_2->setPhysicsBody(PhysicsBody::createBox(Size(10.0f, chain->getContentSize().height),
+			                    PhysicsMaterial(1.0f, 0.2f, 0.5f)));
 		chain_2->setPosition(visibleSize.width / 2, chain->getBoundingBox().getMinY() - chain_2->getContentSize().height * scale / 2);
 		// 设置掩码
 		chain_2->getPhysicsBody()->setCategoryBitmask(0xF0);
@@ -240,16 +242,17 @@ void Wonderland::update(float f) {
 		box = Sprite::create("boxCrate_double.png");
 		box->setScale(scale, scale);
 		box->setPosition(visibleSize.width / 2, chain_2->getBoundingBox().getMinY() - box->getContentSize().height * scale / 2);
-		box->setPhysicsBody(PhysicsBody::createBox(box->getContentSize() * scale * 0.67, PhysicsMaterial(0.3f, 0.2f, 0.8f)));
+		box->setPhysicsBody(PhysicsBody::createBox(box->getContentSize(), PhysicsMaterial(0.3f, 0.2f, 0.8f)));
 		box->getPhysicsBody()->setCategoryBitmask(0xFF);
 		box->getPhysicsBody()->setCollisionBitmask(0x0F);
 		box->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(box);
 
 		isPlayerOnGround[2] = Sprite::create("isPlayerOnBox.png");
-		isPlayerOnGround[2]->setScale(1.7, 1.7);
+		float temp = scale * 1.1;
+		isPlayerOnGround[2]->setScale(temp, temp);
 		isPlayerOnGround[2]->setPosition(box->getPosition());
-		isPlayerOnGround[2]->setOpacity(0);
+		// isPlayerOnGround[2]->setOpacity(0);
 		this->addChild(isPlayerOnGround[2]);
 
 		auto fixedpoint_1 = PhysicsJointPin::construct(upperBound->getPhysicsBody(), chain->getPhysicsBody(),Vec2(upperBound->getPosition().x, upperBound->getBoundingBox().getMinY()));
@@ -330,9 +333,9 @@ void Wonderland::mouseClick(Event* event) {
 		Sprite* bullet = Sprite::create("bullet.png");
 		bullet->setScale(scale * 0.335);
 		Vec2 temp = mousePosition - player->getPosition();
-		temp = 200 * temp / temp.getLength();
+		temp = 0.15 * visibleSize.height * temp / temp.getLength();
 		bullet->setPosition(player->getPosition() + temp);
-		bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * scale * 0.22, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
+		bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * 0.35, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
 		bullet->getPhysicsBody()->setGravityEnable(false);
 		bullet->getPhysicsBody()->setVelocity(temp * 8);
 		// 子弹的Tag为2
@@ -358,7 +361,7 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		lastcid = 'A';
 		player->stopAllActions();
 		player->runAction(RepeatForever::create(action_walk));
-		velocity -= 600;
+		velocity -= 0.390625 * visibleSize.height;
 		keyCount++;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
@@ -369,7 +372,7 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		lastcid = 'D';
 		player->stopAllActions();
 		player->runAction(RepeatForever::create(action_walk));
-		velocity += 600;
+		velocity += 0.390625 * visibleSize.height;
 		keyCount++;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
@@ -377,7 +380,7 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		if (player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[2]->getBoundingBox()))
-			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, 1440));
+			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, visibleSize.height * 0.9375f));
 		player->stopAllActions();
 		player->runAction(action_jump);
 		if (keyCount >= 0)
@@ -402,7 +405,7 @@ void Wonderland::onKeyReleased(EventKeyboard::KeyCode code, Event* event) {
 			player->stopAllActions();
 			player->runAction(RepeatForever::create(action_stand));
 		}
-		velocity += 600;
+		velocity += 0.390625 * visibleSize.height;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_D:
@@ -412,7 +415,7 @@ void Wonderland::onKeyReleased(EventKeyboard::KeyCode code, Event* event) {
 			player->stopAllActions();
 			player->runAction(RepeatForever::create(action_stand));
 		}
-		velocity -= 600;
+		velocity -= 0.390625 * visibleSize.height;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_W:
