@@ -9,7 +9,7 @@ class Wonderland :public Layer {
 public:
 	void setPhysicsWorld(PhysicsWorld * world);
 	// there's no 'id' in cpp, so we recommend returning the class instance pointer
-    static cocos2d::Scene* createScene();
+    static cocos2d::Scene* createScene(int game);
 	static PhysicsWorld* world;
 
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
@@ -25,12 +25,17 @@ private:
 	int velocity = 0;
 	Sprite* ground[25];
 	Sprite* stone[11];
+	Sprite* box;
 	Sprite* isPlayerOnGround[16];
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
+	PhysicsJointPin* connect;
+	bool isChainBroken = 0;
+
 	// ¶¯»­
+	int keyCount = 0;
 	Animation *animation_stand;
 	Animate *action_stand;
 	Animation *animation_walk;
@@ -54,6 +59,8 @@ private:
 	void addMouseListener();
 
 	void update(float f);
+	void win(bool isWin);
+	void goBack(Ref* pSender);
 
 	bool onContactBegan(PhysicsContact& contact);
 	void mouseMove(Event* event);
