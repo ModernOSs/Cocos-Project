@@ -16,7 +16,7 @@ Scene* BeginScene::createScene() {
 	auto scene = Scene::createWithPhysics();
 	//scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Point(0, 0));
-
+	scene->getPhysicsWorld()->setAutoStep(false);
 	auto layer = BeginScene::create(scene->getPhysicsWorld());
 
 	scene->addChild(layer);
@@ -161,7 +161,7 @@ void BeginScene::update(float f) {
 	}
 
 	float moveTo = bee->getPositionX();
-	if (left && moveTo <= 1000 * scale) { left = false; bee->setFlippedX(true); }
+	if (left && moveTo <= 100 * scale) { left = false; bee->setFlippedX(true); }
 	else if (!left && moveTo >= visibleSize.width - 100 * scale) { left = true; bee->setFlippedX(false);}
 	moveTo += left ? -1 : 1;
 	bee->setPositionX(moveTo);

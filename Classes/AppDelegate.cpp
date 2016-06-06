@@ -1,6 +1,5 @@
 #include "AppDelegate.h"
 #include "WonderlandScene.h"
-<<<<<<< HEAD
 #include "BeginScene.h"
 #include "Global.h"
 
