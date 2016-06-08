@@ -1,6 +1,7 @@
 #include "SelectScene.h"
 #include "cocostudio/CocoStudio.h"
 #include "WonderlandScene.h"
+#include "LevelOneScene.h"
 #include "Global.h"
 #include <string>
 using namespace std;
@@ -66,7 +67,10 @@ bool SelectScene::init() {
 	for (int i = 0; i < Global::score; i++) {
 		char imageFileName[128];
 		sprintf(imageFileName, "HUD//hud%d.png", i + 1);
-		auto GameItem = MenuItemImage::create(imageFileName, imageFileName, [&](Ref* pSender) {auto gamescene = Wonderland::createScene(i + 1); Director::getInstance()->replaceScene(gamescene); });
+
+		auto GameItem = MenuItemImage::create(imageFileName, imageFileName, [&](Ref* pSender) {auto gamescene = LevelOne::createScene(i + 1); Director::getInstance()->replaceScene(gamescene); });
+
+		//auto GameItem = MenuItemImage::create(imageFileName, imageFileName, [&](Ref* pSender) {auto gamescene = Wonderland::createScene(i + 1); Director::getInstance()->replaceScene(gamescene); });
 		GameItem->setPosition(Vec2(visibleSize.width / 2 - back1->getContentSize().width * scale * 1.5, visibleSize.height / 2 + back1->getContentSize().width * scale * 1.5));
 		GameItem->setScale(scale, scale);
 		vec.pushBack(GameItem);
