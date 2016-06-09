@@ -84,14 +84,6 @@ void LevelOne::addBackground() {
 		if (i != 2 && i != 3 && i != 4) this->addChild(ground[i], 0);
 	}
 
-	//isPlayerOnGround[0] = Sprite::create("isPlayerOnGround.png");
-	//isPlayerOnGround[0]->setScale(scale * 24, scale);
-	//isPlayerOnGround[0]->setPosition(ground[12]->getPosition() + Vec2(0, isPlayerOnGround[0]->getContentSize().height * scale / 2 +
-	//	ground[12]->getContentSize().height * scale / 2));
-
-	//// isPlayerOnGround[0]->setOpacity(0);
-	//this->addChild(isPlayerOnGround[0], 0);
-
 	// 设置易碎的土块
 	for (unsigned int j = 0; j < 4; j++)
 	{
@@ -173,22 +165,14 @@ void LevelOne::addBackground() {
 		}
 	}
 
-	//isPlayerOnGround[1] = Sprite::create("isPlayerOnGround.png");
-	//isPlayerOnGround[1]->setScale(scale * 10, scale);
-	//isPlayerOnGround[1]->setPosition(fragileGround[5]->getPosition() + Vec2(0, isPlayerOnGround[1]->getContentSize().height * scale / 2 +
-	//	fragileGround[5]->getContentSize().height * scale / 2));
-
-	//// isPlayerOnGround[1]->setOpacity(0);
-	//this->addChild(isPlayerOnGround[1], 0);
-
 	//  大石块
 	bigStone = Sprite::create("bigStone.png");
 	bigStone->setScale(scale, scale);
-	bigStone->setPosition(ground[8]->getPosition() - Vec2(ground[8]->getContentSize().width / 3, 0) + Vec2(0, ground[11]->getContentSize().height * 3 * scale));
+	bigStone->setPosition(ground[8]->getPosition() - Vec2(ground[8]->getContentSize().width / 3, 0) + Vec2(0, ground[11]->getContentSize().height * 3.5 * scale));
 	bigStone->setPhysicsBody(PhysicsBody::createBox(Size(bigStone->getContentSize().width,
 		bigStone->getContentSize().height),
 		PhysicsMaterial(100.0f, 0.0f, 0.5f)));
-	// 大石块的Tag为3  不能被打破 
+	// 大石块的Tag为3  不能被打破
 	bigStone->setTag(3);
 	// 设置掩码
 	bigStone->getPhysicsBody()->setCategoryBitmask(0xFF);
@@ -319,9 +303,6 @@ void LevelOne::update(float f) {
 				chain[i]->setPosition(Vec2(chain[i - 1]->getBoundingBox().getMaxX() + chain[0]->getContentSize().width / 2 * scale, chain[i - 1]->getPositionY()));
 			}
 			chain[i]->setRotation(90.0);
-			//chain[i]->getPhysicsBody()->setDynamic(false);
-
-			chain[i]->setTag(0);
 			// 设置掩码
 			chain[i]->getPhysicsBody()->setCategoryBitmask(0x0F);
 			chain[i]->getPhysicsBody()->setCollisionBitmask(0x0F);
@@ -333,7 +314,7 @@ void LevelOne::update(float f) {
 		saw = Sprite::create("saw.png");
 		saw->setScale(scale, scale);
 		saw->setPosition(Vec2(chain[3]->getBoundingBox().getMaxX(), chain[3]->getPositionY()));
-		saw->setPhysicsBody(PhysicsBody::createCircle(saw->getContentSize().height / 2., PhysicsMaterial(1.0f, 0.0f, 1.0f)));
+		saw->setPhysicsBody(PhysicsBody::createCircle(saw->getContentSize().height / 2., PhysicsMaterial(2.0f, 0.0f, 50.0f)));
 		//saw->getPhysicsBody()->setDynamic(false);
 		saw->setTag(0);
 		saw->getPhysicsBody()->setCategoryBitmask(0xFF);
@@ -356,20 +337,8 @@ void LevelOne::update(float f) {
 		fixedpoint_2->setCollisionEnable(false);
 		Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(fixedpoint_2);
 
-
-		//isPlayerOnGround[2] = Sprite::create("isPlayerOnBox.png");
-		//float temp = scale * 1.1;
-		//isPlayerOnGround[2]->setScale(temp, temp);
-		//isPlayerOnGround[2]->setPosition(saw->getPosition());
-		//// isPlayerOnGround[2]->setOpacity(0);
-		//this->addChild(isPlayerOnGround[2]);
-
 		initial = 0;
 	}
-
-	/*if (saw->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
-		saw->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
-		isPlayerOnGround[2]->setPosition(saw->getPosition());*/
 }
 
 bool LevelOne::onContactBegan(PhysicsContact& contact) {
@@ -399,7 +368,11 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 
 			if (!isChainBroken && sp1 != NULL && sp2 != NULL) {
 				if ((sp1->getTag() == 4 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 4)) {
-					Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(connect, true);
+					//Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(connect, true);
+					
+					if (sp1->getTag() == 4) Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(sp1->getPhysicsBody()->getJoints()[0], true);
+					else if (sp2->getTag() == 4) Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(sp2->getPhysicsBody()->getJoints()[0], true);
+					
 					if (sp1 != NULL)
 						if (sp1->getTag() == 2) {
 							sp1->removeFromParentAndCleanup(true);
@@ -480,12 +453,14 @@ void LevelOne::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_W:
-		/*if (player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
-			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()) ||
-			player->getBoundingBox().intersectsRect(isPlayerOnGround[2]->getBoundingBox()))*/
+		CCLOG("%f", player->getPhysicsBody()->getVelocity().y);
+		if ((int)player->getPhysicsBody()->getVelocity().y == 0) {
 			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, visibleSize.height * 0.9375f));
+		}
 		player->stopAllActions();
 		player->runAction(action_jump);
+		
+
 		if (keyCount >= 0)
 			player->runAction(Sequence::create(DelayTime::create(1.0f), action_walk, NULL));
 		else
@@ -567,4 +542,7 @@ void LevelOne::initaction() {
 	animation_hit->setDelayPerUnit(10.0f);
 	animation_hit->setRestoreOriginalFrame(false);
 	action_hit = Animate::create(animation_hit);
+
 }
+
+

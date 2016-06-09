@@ -1,4 +1,5 @@
 #include "AppDelegate.h"
+#include "LevelOneScene.h"
 #include "WonderlandScene.h"
 #include "BeginScene.h"
 #include "Global.h"
@@ -81,6 +82,11 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto scene = BeginScene::createScene();
     // run
     director->runWithScene(scene);
+
+	//// create a scene. it's an autorelease object
+	//auto scene = LevelOne::createScene(1);
+	//// run
+	//director->runWithScene(scene);
 
     return true;
 }

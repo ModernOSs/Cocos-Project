@@ -48,6 +48,9 @@ private:
 	Animation *animation_hit;
 	Animate *action_hit;
 
+	Sequence *jumpSequence;
+	CallFunc *callback;
+
 	void preloadMusic();
 	void playBgm();
 
@@ -68,4 +71,5 @@ private:
 	void mouseClick(Event* event);
 	void onKeyPressed(EventKeyboard::KeyCode code, Event* event);
 	void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
+	
 };
