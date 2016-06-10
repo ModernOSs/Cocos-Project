@@ -81,11 +81,11 @@ void BeginScene::addBackground() {
 
 	sign = Sprite::create("sign.png");
 	sign->setScale(scale + 0.2);
-	sign->setPosition(visibleSize.width - 100, ground[0]->getContentSize().width * scale + 95*scale);
+	sign->setPosition(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.5);
 	this->addChild(sign, 1);
 
 	auto Begin = Label::createWithTTF("Begin", "fonts\\Marker Felt.ttf", 27);
-	Begin->setPosition(Size(visibleSize.width - 100, ground[0]->getContentSize().width * scale + 110 * scale));
+	Begin->setPosition(Size(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.2));
 	this->addChild(Begin, 1);
 }
 
