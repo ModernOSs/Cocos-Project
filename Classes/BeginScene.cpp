@@ -73,7 +73,7 @@ void BeginScene::addBackground() {
 		this->addChild(ground[i], 0);
 	}
 
-	auto label = Label::createWithTTF("Wonderland", "fonts\\Marker Felt.ttf", 60);
+	auto label = Label::createWithTTF("Wonderland", "fonts\\Marker Felt.ttf", 150 * scale);
 	label->setPosition(Vec2(visibleSize.width / 2,
 		visibleSize.height - label->getContentSize().height));
 	label->setTextColor(Color4B(128, 0, 0, 255));
@@ -81,10 +81,10 @@ void BeginScene::addBackground() {
 
 	sign = Sprite::create("sign.png");
 	sign->setScale(scale + 0.2);
-	sign->setPosition(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.5);
+	sign->setPosition(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.4);
 	this->addChild(sign, 1);
 
-	auto Begin = Label::createWithTTF("Begin", "fonts\\Marker Felt.ttf", 27);
+	auto Begin = Label::createWithTTF("Begin", "fonts\\Marker Felt.ttf", 75 * scale);
 	Begin->setPosition(Size(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.2));
 	this->addChild(Begin, 1);
 }
@@ -147,9 +147,9 @@ void BeginScene::mouseClick(Event* event) {
 	else {
 		player->setFlippedX(false);
 	}
-	walk->setLoops(m/32);
+	walk->setLoops(m/(60 * scale));
 	action_walk = Animate::create(walk);
-	auto move = MoveTo::create(m / 150, Vec2(mousePosition.x, player->getPosition().y));
+	auto move = MoveTo::create(m / (300 * scale), Vec2(mousePosition.x, player->getPosition().y));
 	auto spawn = Spawn::createWithTwoActions(Repeat::create(action_walk, 1), move);
 	player->runAction(spawn);
 }
@@ -163,7 +163,7 @@ void BeginScene::update(float f) {
 	float moveTo = bee->getPositionX();
 	if (left && moveTo <= 100 * scale) { left = false; bee->setFlippedX(true); }
 	else if (!left && moveTo >= visibleSize.width - 100 * scale) { left = true; bee->setFlippedX(false);}
-	moveTo += left ? -1 : 1;
+	moveTo += left ? -2 * scale : 2 * scale;
 	bee->setPositionX(moveTo);
 
 	for (int i = 0; i < 3; ++i)
