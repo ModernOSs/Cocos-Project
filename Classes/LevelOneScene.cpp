@@ -180,12 +180,12 @@ void LevelOne::addBackground() {
 	bigStone->getPhysicsBody()->setContactTestBitmask(0xFF);
 	this->addChild(bigStone, 0);
 
-	//  Ç½
-	for (unsigned int i = 0; i < 5; i++)
+	  //Ç½
+	for (unsigned int i = 0; i < 2; i++)
 	{
 		fragileGround2[i] = Sprite::create("grassCenter.png");
 		fragileGround2[i]->setScale(scale, scale);
-		fragileGround2[i]->setPosition(ground[20]->getPosition() + Vec2(0, fragileGround2[i]->getContentSize().height * (i + 1) * scale));
+		fragileGround2[i]->setPosition(ground[16]->getPosition() - Vec2(0, ground[0]->getContentSize().height * scale * 0.5) + Vec2(0, fragileGround2[i]->getContentSize().height * (i + 1) * scale));
 		fragileGround2[i]->setPhysicsBody(PhysicsBody::createBox(Size(fragileGround2[i]->getContentSize().width,
 			fragileGround[i]->getContentSize().height),
 			PhysicsMaterial(100.0f, 1.0f, 0.3f)));
@@ -285,7 +285,7 @@ void LevelOne::update(float f) {
 		//  ¸ËºÍÇò
 		auto upperBound = Sprite::create("stoneCenter.png");
 		upperBound->setScale(scale, scale);
-		upperBound->setPosition(ground[17]->getPosition() + Vec2(0, ground[0]->getContentSize().height * 6 * scale));
+		upperBound->setPosition(ground[15]->getPosition() + Vec2(0, ground[0]->getContentSize().height * 4.5 * scale));
 		upperBound->setPhysicsBody(PhysicsBody::createBox(upperBound->getContentSize()));
 		upperBound->getPhysicsBody()->setDynamic(false);
 		upperBound->getPhysicsBody()->setCategoryBitmask(0xF0);
@@ -293,7 +293,7 @@ void LevelOne::update(float f) {
 		upperBound->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(upperBound, 0);
 
-		for (unsigned int i = 0; i < 4; ++i) {
+		for (unsigned int i = 0; i < 3; ++i) {
 			chain[i] = Sprite::create("chain.png");
 			chain[i]->setScale(scale, scale);
 			chain[i]->setPhysicsBody(PhysicsBody::createBox(Size(10.0f, chain[i]->getContentSize().height),
@@ -303,6 +303,7 @@ void LevelOne::update(float f) {
 				chain[i]->setPosition(Vec2(chain[i - 1]->getBoundingBox().getMaxX() + chain[0]->getContentSize().width / 2 * scale, chain[i - 1]->getPositionY()));
 			}
 			chain[i]->setRotation(90.0);
+			//chain[i]->getPhysicsBody()->setDynamic(false);
 			// ÉèÖÃÑÚÂë
 			chain[i]->getPhysicsBody()->setCategoryBitmask(0x0F);
 			chain[i]->getPhysicsBody()->setCollisionBitmask(0x0F);
@@ -313,8 +314,8 @@ void LevelOne::update(float f) {
 
 		saw = Sprite::create("saw.png");
 		saw->setScale(scale, scale);
-		saw->setPosition(Vec2(chain[3]->getBoundingBox().getMaxX(), chain[3]->getPositionY()));
-		saw->setPhysicsBody(PhysicsBody::createCircle(saw->getContentSize().height / 2., PhysicsMaterial(2.0f, 0.0f, 50.0f)));
+		saw->setPosition(Vec2(chain[2]->getBoundingBox().getMaxX(), chain[2]->getPositionY()));
+		saw->setPhysicsBody(PhysicsBody::createCircle(saw->getContentSize().height / 2., PhysicsMaterial(5.0f, 0.0f, 50.0f)));
 		//saw->getPhysicsBody()->setDynamic(false);
 		saw->setTag(0);
 		saw->getPhysicsBody()->setCategoryBitmask(0xFF);
@@ -327,13 +328,13 @@ void LevelOne::update(float f) {
 		fixedpoint_1->setCollisionEnable(false);
 		fixedpoint_1->setEnable(false);
 		Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(fixedpoint_1);
-		for (unsigned int i = 0; i < 3; ++i) {
+		for (unsigned int i = 0; i < 2; ++i) {
 			connect = PhysicsJointPin::construct(chain[i]->getPhysicsBody(), chain[i + 1]->getPhysicsBody(), Vec2(chain[i]->getBoundingBox().getMaxX(), chain[i + 1]->getBoundingBox().getMidY()));
 			connect->setCollisionEnable(false);
 			connect->setEnable(false);
 			Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(connect);
 		}
-		auto fixedpoint_2 = PhysicsJointPin::construct(chain[3]->getPhysicsBody(), saw->getPhysicsBody(), Vec2(chain[3]->getBoundingBox().getMaxX(), chain[3]->getPositionY()));
+		auto fixedpoint_2 = PhysicsJointPin::construct(chain[2]->getPhysicsBody(), saw->getPhysicsBody(), Vec2(chain[2]->getBoundingBox().getMaxX(), chain[2]->getPositionY()));
 		fixedpoint_2->setCollisionEnable(false);
 		Director::getInstance()->getRunningScene()->getPhysicsWorld()->addJoint(fixedpoint_2);
 
