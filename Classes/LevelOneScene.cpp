@@ -183,20 +183,20 @@ void LevelOne::addBackground() {
 	  //墙
 	for (unsigned int i = 0; i < 2; i++)
 	{
-		fragileGround2[i] = Sprite::create("grassCenter.png");
-		fragileGround2[i]->setScale(scale, scale);
-		fragileGround2[i]->setPosition(ground[16]->getPosition() - Vec2(0, ground[0]->getContentSize().height * scale * 0.5) + Vec2(0, fragileGround2[i]->getContentSize().height * (i + 1) * scale));
-		fragileGround2[i]->setPhysicsBody(PhysicsBody::createBox(Size(fragileGround2[i]->getContentSize().width,
-			fragileGround[i]->getContentSize().height),
+		fragileWall[i] = Sprite::create("grassCenter.png");
+		fragileWall[i]->setScale(scale, scale);
+		fragileWall[i]->setPosition(ground[16]->getPosition() - Vec2(0, ground[0]->getContentSize().height * scale * 0.5) + Vec2(0, fragileWall[i]->getContentSize().height * (i + 1) * scale));
+		fragileWall[i]->setPhysicsBody(PhysicsBody::createBox(Size(fragileWall[i]->getContentSize().width,
+			fragileWall[i]->getContentSize().height),
 			PhysicsMaterial(100.0f, 1.0f, 0.3f)));
-		fragileGround2[i]->getPhysicsBody()->setDynamic(false);
+		fragileWall[i]->getPhysicsBody()->setDynamic(false);
 		// 土块块的Tag为1 可以被打破
-		fragileGround2[i]->setTag(1);
+		fragileWall[i]->setTag(1);
 		// 设置掩码
-		fragileGround2[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
-		fragileGround2[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
-		fragileGround2[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
-		this->addChild(fragileGround2[i], 0);
+		fragileWall[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
+		fragileWall[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
+		fragileWall[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
+		this->addChild(fragileWall[i], 0);
 	}
 }
 

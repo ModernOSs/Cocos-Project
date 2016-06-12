@@ -5,7 +5,7 @@
 
 USING_NS_CC;
 
-class LevelOne :public Layer {
+class LevelTwo :public Layer {
 public:
 	void setPhysicsWorld(PhysicsWorld * world);
 	// there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -16,25 +16,23 @@ public:
 	virtual bool init();
 
 	// implement the "static create()" method manually
-	CREATE_FUNC(LevelOne);
+	CREATE_FUNC(LevelTwo);
 
 private:
 	Camera* camera;
 	Sprite* player;
 	Sprite* circle;
 	int velocity = 0;
-	Sprite* ground[25];
+	Sprite* ground[60];
 	Sprite* fragileGround[100];
 	Sprite* fragileWall[10];
+	Sprite* platform[4];
+	Sprite* platform2[4];
 	Sprite* bigStone;
-	Sprite* saw;
-	Sprite* chain[5];
-	Sprite* isPlayerOnGround[16];
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
-	PhysicsJointPin* connect;
 	bool isChainBroken = 0;
 
 	// ¶¯»­
@@ -47,9 +45,6 @@ private:
 	Animate *action_jump;
 	Animation *animation_hit;
 	Animate *action_hit;
-
-	Sequence *jumpSequence;
-	CallFunc *callback;
 
 	void preloadMusic();
 	void playBgm();
@@ -71,5 +66,5 @@ private:
 	void mouseClick(Event* event);
 	void onKeyPressed(EventKeyboard::KeyCode code, Event* event);
 	void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
-	
+
 };
