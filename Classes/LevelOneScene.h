@@ -30,6 +30,7 @@ private:
 	Sprite* saw;
 	Sprite* chain[5];
 	Sprite* isPlayerOnGround[16];
+	Sprite* enemies[6];
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
@@ -72,4 +73,5 @@ private:
 	void onKeyPressed(EventKeyboard::KeyCode code, Event* event);
 	void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
 	
+	void addEnemies();
 };

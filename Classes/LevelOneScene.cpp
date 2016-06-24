@@ -32,7 +32,7 @@ bool LevelOne::init() {
 
 	addBackground();
 	addPlayer();
-
+	addEnemies();
 	addCamera();
 
 	addContactListener();
@@ -185,7 +185,7 @@ void LevelOne::addBackground() {
 	{
 		fragileWall[i] = Sprite::create("grassCenter.png");
 		fragileWall[i]->setScale(scale, scale);
-		fragileWall[i]->setPosition(ground[16]->getPosition() - Vec2(0, ground[0]->getContentSize().height * scale * 0.5) + Vec2(0, fragileWall[i]->getContentSize().height * (i + 1) * scale));
+		fragileWall[i]->setPosition(ground[16]->getPosition() - Vec2(-ground[0]->getContentSize().width * scale * 0.35, ground[0]->getContentSize().height * scale * 0.5) + Vec2(0, fragileWall[i]->getContentSize().height * (i + 1) * scale));
 		fragileWall[i]->setPhysicsBody(PhysicsBody::createBox(Size(fragileWall[i]->getContentSize().width,
 			fragileWall[i]->getContentSize().height),
 			PhysicsMaterial(100.0f, 1.0f, 0.3f)));
@@ -199,6 +199,28 @@ void LevelOne::addBackground() {
 		this->addChild(fragileWall[i], 0);
 	}
 }
+
+	//怪物
+void LevelOne::addEnemies() {
+	for (int i = 0; i < 3; ++i) {
+		enemies[i] = Sprite::create("barnacle.png");
+		enemies[i]->setScale(scale, scale);
+		enemies[i]->setPosition(ground[13 + i]->getPosition() + Vec2(0, ground[0]->getContentSize().height * scale));
+		enemies[i]->setPhysicsBody(PhysicsBody::createBox(Size(enemies[i]->getContentSize().width,
+			enemies[i]->getContentSize().height),
+			PhysicsMaterial(100.0f, 1.0f, 0.3f),
+			Vec2(0, -enemies[i]->getContentSize().height * 0.3)));
+		enemies[i]->getPhysicsBody()->setDynamic(false);
+		//怪物tag为5
+		enemies[i]->setTag(5);
+		// 设置掩码
+		enemies[i]->getPhysicsBody()->setCategoryBitmask(0x00);
+		enemies[i]->getPhysicsBody()->setCollisionBitmask(0x00);
+		enemies[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
+		this->addChild(enemies[i], 0);
+	}
+}
+
 
 void LevelOne::addPlayer() {
 	player = Sprite::create("alienGreen_walk0.png");
@@ -304,11 +326,12 @@ void LevelOne::update(float f) {
 			}
 			chain[i]->setRotation(90.0);
 			//chain[i]->getPhysicsBody()->setDynamic(false);
+			//  链tag为4
+			chain[i]->setTag(4);
 			// 设置掩码
 			chain[i]->getPhysicsBody()->setCategoryBitmask(0x0F);
 			chain[i]->getPhysicsBody()->setCollisionBitmask(0x0F);
 			chain[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
-			chain[i]->setTag(4);
 			this->addChild(chain[i], 0);
 		}
 
@@ -317,7 +340,8 @@ void LevelOne::update(float f) {
 		saw->setPosition(Vec2(chain[2]->getBoundingBox().getMaxX(), chain[2]->getPositionY()));
 		saw->setPhysicsBody(PhysicsBody::createCircle(saw->getContentSize().height / 2., PhysicsMaterial(5.0f, 0.0f, 50.0f)));
 		//saw->getPhysicsBody()->setDynamic(false);
-		saw->setTag(0);
+		// 摆锤tag为6
+		saw->setTag(6);
 		saw->getPhysicsBody()->setCategoryBitmask(0xFF);
 		saw->getPhysicsBody()->setCollisionBitmask(0x0F);
 		saw->getPhysicsBody()->setContactTestBitmask(0xFF);
@@ -348,9 +372,16 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 	auto sp1 = (Sprite*)bodyA->getNode();
 	auto sp2 = (Sprite*)bodyB->getNode();
 
-	// 子弹碰土块
+	// 摆锤tag为6
+	// 怪物tag为5
+	// 链tag为4
+	// 大石块的Tag为3
+	// 子弹的Tag为2
+	// 土块的Tag为1
+	// 玩家的tag为0
 	try
 	{
+		// 子弹碰土块
 		if (sp1 != NULL && sp2 != NULL)
 		{
 			if ((sp1->getTag() == 1 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 1))
@@ -366,28 +397,83 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 					sp2 = NULL;
 				}
 			}
+		}
 
-			if (!isChainBroken && sp1 != NULL && sp2 != NULL) {
-				if ((sp1->getTag() == 4 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 4)) {
-					//Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(connect, true);
-					
-					if (sp1->getTag() == 4) Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(sp1->getPhysicsBody()->getJoints()[0], true);
-					else if (sp2->getTag() == 4) Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(sp2->getPhysicsBody()->getJoints()[0], true);
-					
-					if (sp1 != NULL)
-						if (sp1->getTag() == 2) {
-							sp1->removeFromParentAndCleanup(true);
-							sp1 = NULL;
-						}
-					if (sp2 != NULL)
-						if (sp2->getTag() == 2) {
-							sp2->removeFromParentAndCleanup(true);
-							sp2 = NULL;
-						}
-					isChainBroken = 1;
-				}
+		//// 摆锤碰怪物
+		//if (sp1 != NULL && sp2 != NULL)
+		//{
+		//	if ((sp1->getTag() == 5 && sp2->getTag() == 6) || (sp1->getTag() == 6 && sp2->getTag() == 5))
+		//	{
+		//		if (sp1 != NULL && sp1->getTag() == 5)
+		//		{
+		//			sp1->removeFromParentAndCleanup(true);
+		//			sp1 = NULL;
+		//		}
+		//		if (sp2 != NULL && sp2->getTag() == 5)
+		//		{
+		//			sp2->removeFromParentAndCleanup(true);
+		//			sp2 = NULL;
+		//		}
+		//	}
+		//}
+
+		//  子弹碰关节
+		if (!isChainBroken && sp1 != NULL && sp2 != NULL) {
+			if ((sp1->getTag() == 4 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 4)) {
+				if (sp1->getTag() == 4) Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(sp1->getPhysicsBody()->getJoints()[0], true);
+				else if (sp2->getTag() == 4) Director::getInstance()->getRunningScene()->getPhysicsWorld()->removeJoint(sp2->getPhysicsBody()->getJoints()[0], true);
+				
+				if (sp1 != NULL)
+					if (sp1->getTag() == 2) {
+						sp1->removeFromParentAndCleanup(true);
+						sp1 = NULL;
+					}
+				if (sp2 != NULL)
+					if (sp2->getTag() == 2) {
+						sp2->removeFromParentAndCleanup(true);
+						sp2 = NULL;
+					}
+				isChainBroken = 1;
 			}
 		}
+
+		////  player碰怪物
+		//if (sp1 != NULL && sp2 != NULL)
+		//{
+		//	if ((sp1->getTag() == 0 && sp2->getTag() == 5) || (sp1->getTag() == 5 && sp2->getTag() == 0))
+		//	{
+		//		if (sp1 != NULL)
+		//		{
+		//			sp1->removeFromParentAndCleanup(true);
+		//			sp1 = NULL;
+		//		}
+		//		if (sp2 != NULL)
+		//		{
+		//			sp2->removeFromParentAndCleanup(true);
+		//			sp2 = NULL;
+		//		}
+		//	}
+		//}
+
+
+		////  摆锤碰player
+		//if (sp1 != NULL && sp2 != NULL)
+		//{
+		//	if ((sp1->getTag() == 0 && sp2->getTag() == 6) || (sp1->getTag() == 6 && sp2->getTag() == 0))
+		//	{
+		//		if (sp1 != NULL && sp1->getTag() == 0)
+		//		{
+		//			sp1->removeFromParentAndCleanup(true);
+		//			sp1 = NULL;
+		//		}
+		//		if (sp2 != NULL && sp2->getTag() == 0)
+		//		{
+		//			sp2->removeFromParentAndCleanup(true);
+		//			sp2 = NULL;
+		//		}
+		//	}
+		//}
+
 	}
 	catch (exception err)
 	{
