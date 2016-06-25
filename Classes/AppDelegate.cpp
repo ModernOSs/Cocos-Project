@@ -78,16 +78,16 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     register_all_packages();
 
-	////Global::score = 1;
- //   // create a scene. it's an autorelease object
- //   auto scene = BeginScene::createScene();
- //   // run
- //   director->runWithScene(scene);
+	//Global::score = 1;
+    // create a scene. it's an autorelease object
+    auto scene = BeginScene::createScene();
+    // run
+    director->runWithScene(scene);
 
-	// create a scene. it's an autorelease object
-	auto scene = LevelTwo::createScene(1);
-	// run
-	director->runWithScene(scene);
+	//// create a scene. it's an autorelease object
+	//auto scene = LevelTwo::createScene(1);
+	//// run
+	//director->runWithScene(scene);
 
     return true;
 }
