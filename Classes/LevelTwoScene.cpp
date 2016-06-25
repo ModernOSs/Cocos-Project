@@ -41,7 +41,7 @@ bool LevelTwo::init() {
 	addMouseListener();
 
 	this->schedule(schedule_selector(LevelTwo::update), 0.01f);
-
+	this->schedule(schedule_selector(LevelTwo::bulletRemovement), 3.0f);
 	return true;
 }
 
@@ -82,7 +82,8 @@ void LevelTwo::addBackground() {
 		ground[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
 		ground[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
 		ground[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
-		if (!(i >= 2 && i <= 6) && !(i >= 9 && i <= 24)) this->addChild(ground[i], 0);
+		if (!(i >= 2 && i <= 6) && !(i >= 9 && i <= 24))
+		this->addChild(ground[i], 0);
 	}
 
 	// 上下移动的平台
@@ -176,8 +177,9 @@ void LevelTwo::addBackground() {
 	}
 	//  大石块
 	bigStone = Sprite::create("bigStone.png");
-	bigStone->setScale(scale, scale);
-	bigStone->setPosition(ground[27]->getPosition() - Vec2(ground[0]->getContentSize().width / 3, 0) + Vec2(0, ground[0]->getContentSize().height * 5.5 * scale));
+	bigStone->setScale(scale);
+	bigStone->setPosition(Vec2((ground[26]->getPositionX() + ground[27]->getPositionX()) / 2,
+		(fragileWall[4]->getBoundingBox().getMaxY())));
 	bigStone->setPhysicsBody(PhysicsBody::createBox(Size(bigStone->getContentSize().width,
 		bigStone->getContentSize().height),
 		PhysicsMaterial(100.0f, 0.0f, 0.5f)));
@@ -209,20 +211,66 @@ void LevelTwo::addEnemies() {
 		this->addChild(enemies[i], 0);
 	}
 
+	// 怪物1动画
+	Animation *animation_monster_move;
+	Animate *monster_move;
+	animation_monster_move = Animation::create();
+	for (int i = 0; i < 2; i++)
+	{
+		char imageFile[128];
+		sprintf(imageFile, "barnacle%d.png", i);
+		animation_monster_move->addSpriteFrameWithFileName(imageFile);
+	}
+	animation_monster_move->setDelayPerUnit(0.5f);
+	animation_monster_move->setLoops(1024);
+	monster_move = Animate::create(animation_monster_move);
+
+	enemies[0]->runAction(monster_move);
+	enemies[1]->runAction(monster_move->clone());
+
+
+	//  怪物2
 	enemies2[0] = Sprite::create("slimeBlock.png");
 	enemies2[0]->setScale(scale);
-	enemies2[0]->setPosition(ground[7]->getPosition() + Vec2(ground[0]->getContentSize().width * scale * 0.7, ground[0]->getContentSize().height * scale));
+	enemies2[0]->setPosition(ground[7]->getPosition() + Vec2(ground[0]->getContentSize().width * scale * 0.5, ground[0]->getContentSize().height * scale));
 	enemies2[0]->setTag(5);
 	enemies2[0]->setPhysicsBody(PhysicsBody::createBox(Size(enemies2[0]->getContentSize().width * 0.8,
 		enemies2[0]->getContentSize().height * 0.78),
 		PhysicsMaterial(1.0f, 1.0f, 0.3f),
 		Vec2(0, -enemies2[0]->getContentSize().height * 0.13)));
 	enemies2[0]->getPhysicsBody()->setDynamic(false);
+	enemies2[0]->setTag(8);
 	// 设置掩码
 	enemies2[0]->getPhysicsBody()->setCategoryBitmask(0xFF);
 	enemies2[0]->getPhysicsBody()->setCollisionBitmask(0xFF);
 	enemies2[0]->getPhysicsBody()->setContactTestBitmask(0xFF);
 	this->addChild(enemies2[0], 0);
+	
+	//怪物2动画
+	Animation *animation_monster_move2;
+	Animate *monster_move2;
+	animation_monster_move2 = Animation::create();
+	for (int i = 0; i < 2; i++)
+	{
+		char imageFile[128];
+		sprintf(imageFile, "slimeBlock%d.png", i);
+		animation_monster_move2->addSpriteFrameWithFileName(imageFile);
+	}
+	animation_monster_move2->setDelayPerUnit(1.8f);
+	animation_monster_move2->setLoops(1024);
+	monster_move2 = Animate::create(animation_monster_move2);
+
+	ActionInterval *jump = JumpBy::create(1.8f, Vec2(0, 0), ground[0]->getContentSize().height * scale * 1.5, 1);
+	enemies2[0]->runAction(RepeatForever::create(jump));
+
+	enemies2[0]->runAction(monster_move2);
+}
+
+void LevelTwo::bulletRemovement(float dt) {
+	if (bullets.size() != 0 && bullets.at(0) != NULL) {
+		bullets.at(0)->removeFromParentAndCleanup(true);
+		bullets.erase(0);
+	}
 }
 
 void LevelTwo::addPlayer() {
@@ -283,9 +331,9 @@ void LevelTwo::update(float f) {
 		camera->setPositionX(player->getPositionX());
 
 	// 物理世界控制
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 3; ++i)
 	{
-		getScene()->getPhysicsWorld()->step(1 / 500.0f);
+		getScene()->getPhysicsWorld()->step(1 / 400.0f);
 	}
 	Director::getInstance()->getRunningScene()->getPhysicsWorld()->setGravity(Vec2(0, -visibleSize.height * 1.9140625f));
 	// 玩家速度控制
@@ -339,8 +387,9 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 	auto sp1 = (Sprite*)bodyA->getNode();
 	auto sp2 = (Sprite*)bodyB->getNode();
 
-	// 怪物tag为5
+	// 怪物2tag为8
 	// 大石块的Tag为7
+	// 怪物1tag为5
 	// 地块tag为3
 	// 子弹的Tag为2
 	// 土块的Tag为1
@@ -366,7 +415,7 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 			}
 		}
 
-		// 石块碰怪物
+		// 石块碰怪物1
 		if (sp1 != NULL && sp2 != NULL)
 		{
 			if ((sp1->getTag() == 5 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 5))
@@ -377,6 +426,23 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 					sp1 = NULL;
 				}
 				if (sp2 != NULL && sp2->getTag() == 5)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					sp2 = NULL;
+				}
+			}
+		}
+		// player碰怪物2
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 8 && sp2->getTag() == 0) || (sp1->getTag() == 0 && sp2->getTag() == 8))
+			{
+				if (sp1 != NULL && sp1->getTag() == 8)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					sp1 = NULL;
+				}
+				if (sp2 != NULL && sp2->getTag() == 8)
 				{
 					sp2->removeFromParentAndCleanup(true);
 					sp2 = NULL;
@@ -416,6 +482,7 @@ void LevelTwo::mouseClick(Event* event) {
 		bullet->getPhysicsBody()->setCategoryBitmask(0xFF);
 		bullet->getPhysicsBody()->setCollisionBitmask(0xFF);
 		bullet->getPhysicsBody()->setContactTestBitmask(0xFF);
+		bullets.pushBack(bullet);
 		this->addChild(bullet);
 	}
 }
@@ -453,7 +520,7 @@ void LevelTwo::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		if ((int)player->getPhysicsBody()->getVelocity().y == 0 ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox())) {
-			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, visibleSize.height * 0.9375f));
+			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, visibleSize.height * 1.0f));//  0.9375f
 		}
 		player->stopAllActions();
 		player->runAction(action_jump);

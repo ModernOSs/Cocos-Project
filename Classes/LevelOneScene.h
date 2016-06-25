@@ -37,6 +37,9 @@ private:
 	double scale;
 	PhysicsJointPin* connect;
 	bool isChainBroken = 0;
+	Vector<Sprite*> diamond;
+	Sprite* exit;
+	int score;
 
 	// ¶¯»­
 	int keyCount = 0;
@@ -60,6 +63,8 @@ private:
 	void initaction();
 
 	void addCamera();
+	void win(bool isWin);
+	void goBack(Ref* pSender);
 
 	void addContactListener();
 	void addKeyboardListener();

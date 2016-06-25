@@ -9,7 +9,7 @@ void LevelOne::setPhysicsWorld(PhysicsWorld* world) { m_world = world; }
 
 Scene* LevelOne::createScene(int game) {
 	auto scene = Scene::createWithPhysics();
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
 	scene->getPhysicsWorld()->setAutoStep(false);
 
@@ -25,6 +25,7 @@ bool LevelOne::init() {
 		return false;
 	}
 
+	score = 0;
 	visibleSize = Director::getInstance()->getVisibleSize();
 
 	preloadMusic();
@@ -84,6 +85,39 @@ void LevelOne::addBackground() {
 		if (i != 2 && i != 3 && i != 4)
 		this->addChild(ground[i], 0);
 	}
+
+	//添加钻石
+	for (int i = 0; i < 3; i++) {
+		auto dia = Sprite::create("HUD//hudJewel_blue.png");
+		dia->setPhysicsBody(PhysicsBody::createBox(Size(dia->getContentSize().width*0.8,
+			dia->getContentSize().height*0.8),
+			PhysicsMaterial(0.0f, 0.0f, 0.0f),
+			Vec2(0, -dia->getContentSize().height * 0.1)));
+		dia->getPhysicsBody()->setDynamic(false);
+		dia->setTag(7);
+		dia->getPhysicsBody()->setCategoryBitmask(0xFF);
+		dia->getPhysicsBody()->setCollisionBitmask(0xFF);
+		dia->getPhysicsBody()->setContactTestBitmask(0xFF);
+		dia->setScale(scale, scale);
+		diamond.pushBack(dia);
+	}
+	diamond.at(0)->setPosition(3 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 4);
+	this->addChild(diamond.at(0), 2);
+	diamond.at(1)->setPosition(10 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 7.5);
+	this->addChild(diamond.at(1), 2);
+	diamond.at(2)->setPosition(13 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 2.5);
+	this->addChild(diamond.at(2), 2);
+
+	//添加出口
+	exit = Sprite::create("signExit.png");
+	exit->setScale(scale, scale);
+	exit->setPosition(22 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 1.5);
+
+	this->addChild(exit, 3);
 
 	// 设置易碎的土块
 	for (unsigned int j = 0; j < 4; j++)
@@ -386,6 +420,18 @@ void LevelOne::update(float f) {
 
 		initial = 0;
 	}
+
+	Sprite* board;
+	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
+		this->unschedule(schedule_selector(LevelOne::update));
+		if (score == 0) board = Sprite::create("greyBoard_win0.png");
+		else if (score == 1) board = Sprite::create("greyBoard_win1.png");
+		else if (score == 2) board = Sprite::create("greyBoard_win2.png");
+		else board = Sprite::create("greyBoard_win3.png");
+		board->setScale(scale + 0.5);
+		board->setPosition(Vec2(camera->getPosition().x + board->getContentSize().width * scale * 0.04, camera->getPosition().y + 130 * scale));
+		this->addChild(board, 3);
+	}
 }
 
 bool LevelOne::onContactBegan(PhysicsContact& contact) {
@@ -394,6 +440,7 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 	auto sp1 = (Sprite*)bodyA->getNode();
 	auto sp2 = (Sprite*)bodyB->getNode();
 
+	// 钻石的tag为7
 	// 摆锤tag为6
 	// 怪物tag为5
 	// 链tag为4
@@ -459,35 +506,36 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 			}
 		}
 
-		//  player碰怪物
-		if (sp1 != NULL && sp2 != NULL)
-		{
-			if ((sp1->getTag() == 0 && sp2->getTag() == 5) || (sp1->getTag() == 5 && sp2->getTag() == 0))
-			{
-				if (sp1 != NULL)
-				{
-					sp1->removeFromParentAndCleanup(true);
-					sp1 = NULL;
-				}
-				if (sp2 != NULL)
-				{
-					sp2->removeFromParentAndCleanup(true);
-					sp2 = NULL;
-				}
-			}
-		}
+		////  player碰怪物
+		//if (sp1 != NULL && sp2 != NULL)
+		//{
+		//	if ((sp1->getTag() == 0 && sp2->getTag() == 5) || (sp1->getTag() == 5 && sp2->getTag() == 0))
+		//	{
+		//		if (sp1 != NULL)
+		//		{
+		//			sp1->removeFromParentAndCleanup(true);
+		//			sp1 = NULL;
+		//		}
+		//		if (sp2 != NULL)
+		//		{
+		//			sp2->removeFromParentAndCleanup(true);
+		//			sp2 = NULL;
+		//		}
+		//	}
+		//}
 
-		//  摆锤碰player
+		//  player碰钻石
 		if (sp1 != NULL && sp2 != NULL)
 		{
-			if ((sp1->getTag() == 0 && sp2->getTag() == 6) || (sp1->getTag() == 6 && sp2->getTag() == 0))
+			if ((sp1->getTag() == 0 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 0))
 			{
-				if (sp1 != NULL && sp1->getTag() == 0)
+				score++;
+				if (sp1 != NULL && sp1->getTag()== 7)
 				{
 					sp1->removeFromParentAndCleanup(true);
 					sp1 = NULL;
 				}
-				if (sp2 != NULL && sp2->getTag() == 0)
+				if (sp2 != NULL && sp2->getTag() == 7)
 				{
 					sp2->removeFromParentAndCleanup(true);
 					sp2 = NULL;

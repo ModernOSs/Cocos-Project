@@ -32,6 +32,7 @@ private:
 	Sprite* enemies[6];
 	Sprite* enemies2[5];
 	Sprite* bigStone;
+	Vector<Sprite *> bullets;
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
@@ -71,4 +72,5 @@ private:
 	void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
 
 	void addEnemies();
+	void bulletRemovement(float dt);
 };
