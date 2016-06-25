@@ -1,5 +1,6 @@
 #include "AppDelegate.h"
 #include "LevelOneScene.h"
+#include "LevelTwoScene.h"
 #include "WonderlandScene.h"
 #include "BeginScene.h"
 #include "Global.h"
@@ -10,7 +11,6 @@ static cocos2d::Size designResolutionSize = cocos2d::Size(720, 480);
 static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
 static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
 static cocos2d::Size largeResolutionSize = cocos2d::Size(1024, 768);
-
 
 AppDelegate::AppDelegate() {
 
@@ -78,16 +78,16 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     register_all_packages();
 
-	//Global::score = 1;
-    // create a scene. it's an autorelease object
-    auto scene = BeginScene::createScene();
-    // run
-    director->runWithScene(scene);
+	////Global::score = 1;
+ //   // create a scene. it's an autorelease object
+ //   auto scene = BeginScene::createScene();
+ //   // run
+ //   director->runWithScene(scene);
 
-	//// create a scene. it's an autorelease object
-	//auto scene = LevelOne::createScene(1);
-	//// run
-	//director->runWithScene(scene);
+	// create a scene. it's an autorelease object
+	auto scene = LevelTwo::createScene(1);
+	// run
+	director->runWithScene(scene);
 
     return true;
 }

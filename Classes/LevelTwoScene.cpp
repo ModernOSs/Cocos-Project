@@ -32,6 +32,7 @@ bool LevelTwo::init() {
 
 	addBackground();
 	addPlayer();
+	addEnemies();
 
 	addCamera();
 
@@ -81,30 +82,38 @@ void LevelTwo::addBackground() {
 		ground[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
 		ground[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
 		ground[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
-		if (!(i >= 2 && i <= 6) && !(i >= 9 && i <= 25)) this->addChild(ground[i], 0);
+		if (!(i >= 2 && i <= 6) && !(i >= 9 && i <= 24)) this->addChild(ground[i], 0);
 	}
 
 	// 上下移动的平台
-	for (unsigned int i = 0; i < 4; ++i) {
-		platform[i] = Sprite::create("bridgeA.png");
+	for (unsigned int i = 0; i < 2; ++i) {
+		platform[i] = Sprite::create("bridge.png");
 		platform[i]->setScale(scale);
-		if (i >= 0 && i < 2) {
-			platform[i]->setPosition(ground[3 + i]->getPosition() + Vec2(ground[0]->getContentSize().width * scale * 0.5, ground[0]->getContentSize().height * 0.5 * scale));
+		if (i == 0) {
+			platform[i]->setPosition(ground[3 + i]->getPosition() + Vec2(ground[0]->getContentSize().width * scale, ground[0]->getContentSize().height * 0.5 * scale));
 		}
-		else if (i >= 2 && i < 4) {
-			platform[i]->setPosition(ground[18 + i]->getPosition() + Vec2(ground[0]->getContentSize().width * scale * 0.5, ground[0]->getContentSize().height * 4 * scale));
+		else if (i == 1) {
+			platform[i]->setPosition(ground[18 + i]->getPosition() + Vec2(ground[0]->getContentSize().width * scale, ground[0]->getContentSize().height * 4 * scale));
 		}
 		platform[i]->setPhysicsBody(PhysicsBody::createBox(Size(platform[i]->getContentSize().width,
 			platform[i]->getContentSize().height * 50.0 / 128.0),
 			PhysicsMaterial(100.0f, 1.0f, 0.5f),
 			Vec2(0, platform[i]->getContentSize().height * 0.3)));
 		platform[i]->getPhysicsBody()->setDynamic(false);
+		//  平台tag为3
 		platform[i]->setTag(3);
 		// 设置掩码
 		platform[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
 		platform[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
 		platform[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(platform[i], 0);
+
+		isPlayerOnGround[i] = Sprite::create("isPlayerOnBox.png");
+		isPlayerOnGround[i]->setScale(scale * 2, scale);
+		isPlayerOnGround[i]->setPosition(platform[i]->getPosition() + Vec2(0, platform[i]->getContentSize().height * scale * 0.2));
+
+		  isPlayerOnGround[i]->setOpacity(0);
+		this->addChild(isPlayerOnGround[i], 0);
 	}
 
 	//  左右移动的平台
@@ -122,6 +131,7 @@ void LevelTwo::addBackground() {
 			PhysicsMaterial(100.0f, 1.0f, 0.5f),
 			Vec2(0, platform2[i]->getContentSize().height * 0.3)));
 		platform2[i]->getPhysicsBody()->setDynamic(false);
+		// 平台tag为3
 		platform2[i]->setTag(3);
 		// 设置掩码
 		platform2[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
@@ -171,15 +181,48 @@ void LevelTwo::addBackground() {
 	bigStone->setPhysicsBody(PhysicsBody::createBox(Size(bigStone->getContentSize().width,
 		bigStone->getContentSize().height),
 		PhysicsMaterial(100.0f, 0.0f, 0.5f)));
-	// 大石块的Tag为3  不能被打破
-	bigStone->setTag(3);
+	// 大石块的Tag为7  不能被打破
+	bigStone->setTag(7);
 	// 设置掩码
 	bigStone->getPhysicsBody()->setCategoryBitmask(0xFF);
 	bigStone->getPhysicsBody()->setCollisionBitmask(0xFF);
 	bigStone->getPhysicsBody()->setContactTestBitmask(0xFF);
 	this->addChild(bigStone, 0);
+}
 
+void LevelTwo::addEnemies() {
+	for (int i = 0; i < 2; ++i) {
+		enemies[i] = Sprite::create("barnacle.png");
+		enemies[i]->setScale(scale, scale);
+		enemies[i]->setPosition(Vec2(fragileGround[i]->getPositionX(), fragileWall[0]->getPositionY()));
+		enemies[i]->setPhysicsBody(PhysicsBody::createBox(Size(enemies[i]->getContentSize().width,
+			enemies[i]->getContentSize().height),
+			PhysicsMaterial(1.0f, 1.0f, 0.3f),
+			Vec2(0, -enemies[i]->getContentSize().height * 0.3)));
+		enemies[i]->getPhysicsBody()->setDynamic(false);
+		//怪物tag为5
+		enemies[i]->setTag(5);
+		// 设置掩码
+		enemies[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
+		enemies[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
+		enemies[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
+		this->addChild(enemies[i], 0);
+	}
 
+	enemies2[0] = Sprite::create("slimeBlock.png");
+	enemies2[0]->setScale(scale);
+	enemies2[0]->setPosition(ground[7]->getPosition() + Vec2(ground[0]->getContentSize().width * scale * 0.7, ground[0]->getContentSize().height * scale));
+	enemies2[0]->setTag(5);
+	enemies2[0]->setPhysicsBody(PhysicsBody::createBox(Size(enemies2[0]->getContentSize().width * 0.8,
+		enemies2[0]->getContentSize().height * 0.78),
+		PhysicsMaterial(1.0f, 1.0f, 0.3f),
+		Vec2(0, -enemies2[0]->getContentSize().height * 0.13)));
+	enemies2[0]->getPhysicsBody()->setDynamic(false);
+	// 设置掩码
+	enemies2[0]->getPhysicsBody()->setCategoryBitmask(0xFF);
+	enemies2[0]->getPhysicsBody()->setCollisionBitmask(0xFF);
+	enemies2[0]->getPhysicsBody()->setContactTestBitmask(0xFF);
+	this->addChild(enemies2[0], 0);
 }
 
 void LevelTwo::addPlayer() {
@@ -277,9 +320,13 @@ void LevelTwo::update(float f) {
 		cnt = 0.0;
 		dir = -dir;
 	}
+
+	platform[0]->setPosition(platform[0]->getPosition() + Vec2(0, dir));
+	platform[1]->setPosition(platform[1]->getPosition() + Vec2(0, -dir));
+	isPlayerOnGround[0]->setPosition(isPlayerOnGround[0]->getPosition() + Vec2(0, dir));
+	isPlayerOnGround[1]->setPosition(isPlayerOnGround[1]->getPosition() + Vec2(0, -dir));
+
 	for (int i = 0; i < 2; ++i) {
-		platform[i]->setPosition(platform[i]->getPosition() + Vec2(0, dir));
-		platform[i + 2]->setPosition(platform[i + 2]->getPosition() + Vec2(0, -dir));
 		platform2[i]->setPosition(platform2[i]->getPosition() + Vec2(-dir, 0));
 		platform2[i + 2]->setPosition(platform2[i + 2]->getPosition() + Vec2(dir, 0));
 	}
@@ -292,9 +339,16 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 	auto sp1 = (Sprite*)bodyA->getNode();
 	auto sp2 = (Sprite*)bodyB->getNode();
 
-	// 子弹碰土块
+	// 怪物tag为5
+	// 大石块的Tag为7
+	// 地块tag为3
+	// 子弹的Tag为2
+	// 土块的Tag为1
+	// 玩家的tag为0
+
 	try
 	{
+		// 子弹碰土块
 		if (sp1 != NULL && sp2 != NULL)
 		{
 			if ((sp1->getTag() == 1 && sp2->getTag() == 2) || (sp1->getTag() == 2 && sp2->getTag() == 1))
@@ -305,6 +359,24 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 					sp1 = NULL;
 				}
 				if (sp2 != NULL)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					sp2 = NULL;
+				}
+			}
+		}
+
+		// 石块碰怪物
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 5 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 5))
+			{
+				if (sp1 != NULL && sp1->getTag() == 5)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					sp1 = NULL;
+				}
+				if (sp2 != NULL && sp2->getTag() == 5)
 				{
 					sp2->removeFromParentAndCleanup(true);
 					sp2 = NULL;
@@ -378,8 +450,9 @@ void LevelTwo::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_W:
-		CCLOG("%f", player->getPhysicsBody()->getVelocity().y);
-		if ((int)player->getPhysicsBody()->getVelocity().y == 0) {
+		if ((int)player->getPhysicsBody()->getVelocity().y == 0 ||
+			player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
+			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox())) {
 			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, visibleSize.height * 0.9375f));
 		}
 		player->stopAllActions();

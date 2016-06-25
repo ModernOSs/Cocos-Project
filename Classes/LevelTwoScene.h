@@ -24,10 +24,13 @@ private:
 	Sprite* circle;
 	int velocity = 0;
 	Sprite* ground[60];
+	Sprite* isPlayerOnGround[16];
 	Sprite* fragileGround[100];
 	Sprite* fragileWall[10];
 	Sprite* platform[4];
 	Sprite* platform2[4];
+	Sprite* enemies[6];
+	Sprite* enemies2[5];
 	Sprite* bigStone;
 	PhysicsWorld* m_world;
 	Size visibleSize;
@@ -67,4 +70,5 @@ private:
 	void onKeyPressed(EventKeyboard::KeyCode code, Event* event);
 	void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
 
+	void addEnemies();
 };
