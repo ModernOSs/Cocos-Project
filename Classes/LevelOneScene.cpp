@@ -81,7 +81,8 @@ void LevelOne::addBackground() {
 		ground[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
 		ground[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
 		ground[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
-		if (i != 2 && i != 3 && i != 4) this->addChild(ground[i], 0);
+		//if (i != 2 && i != 3 && i != 4)
+		this->addChild(ground[i], 0);
 	}
 
 	// 设置易碎的土块
@@ -168,7 +169,8 @@ void LevelOne::addBackground() {
 	//  大石块
 	bigStone = Sprite::create("bigStone.png");
 	bigStone->setScale(scale, scale);
-	bigStone->setPosition(ground[8]->getPosition() - Vec2(ground[8]->getContentSize().width / 3, 0) + Vec2(0, ground[11]->getContentSize().height * 3.5 * scale));
+	bigStone->setPosition(Vec2((fragileGround[6]->getPositionX() + fragileGround[7]->getPositionX()) / 2,
+		(fragileGround[12]->getPositionY() + fragileGround[14]->getPositionY()) / 2));
 	bigStone->setPhysicsBody(PhysicsBody::createBox(Size(bigStone->getContentSize().width,
 		bigStone->getContentSize().height),
 		PhysicsMaterial(100.0f, 0.0f, 0.5f)));
@@ -185,40 +187,60 @@ void LevelOne::addBackground() {
 	{
 		fragileWall[i] = Sprite::create("grassCenter.png");
 		fragileWall[i]->setScale(scale, scale);
-		fragileWall[i]->setPosition(ground[16]->getPosition() - Vec2(-ground[0]->getContentSize().width * scale * 0.35, ground[0]->getContentSize().height * scale * 0.5) + Vec2(0, fragileWall[i]->getContentSize().height * (i + 1) * scale));
+		fragileWall[i]->setPosition(ground[16]->getPosition() - Vec2(-ground[0]->getContentSize().width * scale * 0.35, ground[0]->getContentSize().height * scale * 0.5)
+			+ Vec2(0, fragileWall[i]->getContentSize().height * (i + 1) * scale));
 		fragileWall[i]->setPhysicsBody(PhysicsBody::createBox(Size(fragileWall[i]->getContentSize().width,
 			fragileWall[i]->getContentSize().height),
-			PhysicsMaterial(100.0f, 1.0f, 0.3f)));
+			PhysicsMaterial(1.0f, 0.0f, 0.3f)));
 		fragileWall[i]->getPhysicsBody()->setDynamic(false);
 		// 土块块的Tag为1 可以被打破
-		fragileWall[i]->setTag(1);
 		// 设置掩码
 		fragileWall[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
 		fragileWall[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
 		fragileWall[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(fragileWall[i], 0);
 	}
+	fragileWall[1]->setTag(1);
+	fragileWall[0]->setTag(9);
 }
 
 	//怪物
 void LevelOne::addEnemies() {
 	for (int i = 0; i < 3; ++i) {
-		enemies[i] = Sprite::create("barnacle.png");
+		enemies[i] = Sprite::create("barnacle0.png");
 		enemies[i]->setScale(scale, scale);
 		enemies[i]->setPosition(ground[13 + i]->getPosition() + Vec2(0, ground[0]->getContentSize().height * scale));
 		enemies[i]->setPhysicsBody(PhysicsBody::createBox(Size(enemies[i]->getContentSize().width,
 			enemies[i]->getContentSize().height),
-			PhysicsMaterial(100.0f, 1.0f, 0.3f),
+			PhysicsMaterial(1.0f, 1.0f, 0.3f),
 			Vec2(0, -enemies[i]->getContentSize().height * 0.3)));
 		enemies[i]->getPhysicsBody()->setDynamic(false);
 		//怪物tag为5
 		enemies[i]->setTag(5);
 		// 设置掩码
-		enemies[i]->getPhysicsBody()->setCategoryBitmask(0x00);
-		enemies[i]->getPhysicsBody()->setCollisionBitmask(0x00);
+		enemies[i]->getPhysicsBody()->setCategoryBitmask(0xF0);
+		enemies[i]->getPhysicsBody()->setCollisionBitmask(0xF0);
 		enemies[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(enemies[i], 0);
 	}
+
+	// 怪物动画
+	Animation *animation_monster_move;
+	Animate *monster_move;
+	animation_monster_move = Animation::create();
+	for (int i = 0; i < 2; i++)
+	{
+		char imageFile[128];
+		sprintf(imageFile, "barnacle%d.png", i);
+		animation_monster_move->addSpriteFrameWithFileName(imageFile);
+	}
+	animation_monster_move->setDelayPerUnit(0.5f);
+	animation_monster_move->setLoops(1024);
+	monster_move = Animate::create(animation_monster_move);
+
+	enemies[0]->runAction(monster_move);
+	enemies[1]->runAction(monster_move->clone());
+	enemies[2]->runAction(monster_move->clone());
 }
 
 
@@ -338,11 +360,11 @@ void LevelOne::update(float f) {
 		saw = Sprite::create("saw.png");
 		saw->setScale(scale, scale);
 		saw->setPosition(Vec2(chain[2]->getBoundingBox().getMaxX(), chain[2]->getPositionY()));
-		saw->setPhysicsBody(PhysicsBody::createCircle(saw->getContentSize().height / 2., PhysicsMaterial(5.0f, 0.0f, 50.0f)));
+		saw->setPhysicsBody(PhysicsBody::createCircle(saw->getContentSize().height / 2., PhysicsMaterial(5.0f,0.0f, 50.0f)));
 		//saw->getPhysicsBody()->setDynamic(false);
 		// 摆锤tag为6
 		saw->setTag(6);
-		saw->getPhysicsBody()->setCategoryBitmask(0xFF);
+		saw->getPhysicsBody()->setCategoryBitmask(0x0F);
 		saw->getPhysicsBody()->setCollisionBitmask(0x0F);
 		saw->getPhysicsBody()->setContactTestBitmask(0xFF);
 		this->addChild(saw);
@@ -399,23 +421,23 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 			}
 		}
 
-		//// 摆锤碰怪物
-		//if (sp1 != NULL && sp2 != NULL)
-		//{
-		//	if ((sp1->getTag() == 5 && sp2->getTag() == 6) || (sp1->getTag() == 6 && sp2->getTag() == 5))
-		//	{
-		//		if (sp1 != NULL && sp1->getTag() == 5)
-		//		{
-		//			sp1->removeFromParentAndCleanup(true);
-		//			sp1 = NULL;
-		//		}
-		//		if (sp2 != NULL && sp2->getTag() == 5)
-		//		{
-		//			sp2->removeFromParentAndCleanup(true);
-		//			sp2 = NULL;
-		//		}
-		//	}
-		//}
+		// 摆锤碰怪物
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 5 && sp2->getTag() == 6) || (sp1->getTag() == 6 && sp2->getTag() == 5))
+			{
+				if (sp1 != NULL && sp1->getTag() == 5)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					sp1 = NULL;
+				}
+				if (sp2 != NULL && sp2->getTag() == 5)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					sp2 = NULL;
+				}
+			}
+		}
 
 		//  子弹碰关节
 		if (!isChainBroken && sp1 != NULL && sp2 != NULL) {
@@ -437,43 +459,60 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 			}
 		}
 
-		////  player碰怪物
-		//if (sp1 != NULL && sp2 != NULL)
-		//{
-		//	if ((sp1->getTag() == 0 && sp2->getTag() == 5) || (sp1->getTag() == 5 && sp2->getTag() == 0))
-		//	{
-		//		if (sp1 != NULL)
-		//		{
-		//			sp1->removeFromParentAndCleanup(true);
-		//			sp1 = NULL;
-		//		}
-		//		if (sp2 != NULL)
-		//		{
-		//			sp2->removeFromParentAndCleanup(true);
-		//			sp2 = NULL;
-		//		}
-		//	}
-		//}
+		//  player碰怪物
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 0 && sp2->getTag() == 5) || (sp1->getTag() == 5 && sp2->getTag() == 0))
+			{
+				if (sp1 != NULL)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					sp1 = NULL;
+				}
+				if (sp2 != NULL)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					sp2 = NULL;
+				}
+			}
+		}
 
+		//  摆锤碰player
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 0 && sp2->getTag() == 6) || (sp1->getTag() == 6 && sp2->getTag() == 0))
+			{
+				if (sp1 != NULL && sp1->getTag() == 0)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					sp1 = NULL;
+				}
+				if (sp2 != NULL && sp2->getTag() == 0)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					sp2 = NULL;
+				}
+			}
+		}
 
-		////  摆锤碰player
-		//if (sp1 != NULL && sp2 != NULL)
-		//{
-		//	if ((sp1->getTag() == 0 && sp2->getTag() == 6) || (sp1->getTag() == 6 && sp2->getTag() == 0))
-		//	{
-		//		if (sp1 != NULL && sp1->getTag() == 0)
-		//		{
-		//			sp1->removeFromParentAndCleanup(true);
-		//			sp1 = NULL;
-		//		}
-		//		if (sp2 != NULL && sp2->getTag() == 0)
-		//		{
-		//			sp2->removeFromParentAndCleanup(true);
-		//			sp2 = NULL;
-		//		}
-		//	}
-		//}
-
+		// 子弹碰除了关节、土块的别的物体
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 2 && sp2->getTag() != 1 && sp2->getTag() != 4) ||
+				(sp2->getTag() == 2 && sp1->getTag() != 1 && sp1->getTag() != 4))
+			{
+				if (sp1 != NULL && sp1->getTag() == 2)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					sp1 = NULL;
+				}
+				if (sp2 != NULL && sp2->getTag() == 2)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					sp2 = NULL;
+				}
+			}
+		}
 	}
 	catch (exception err)
 	{
@@ -629,7 +668,6 @@ void LevelOne::initaction() {
 	animation_hit->setDelayPerUnit(10.0f);
 	animation_hit->setRestoreOriginalFrame(false);
 	action_hit = Animate::create(animation_hit);
-
 }
 
 

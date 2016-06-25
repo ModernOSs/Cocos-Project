@@ -6,8 +6,12 @@
 
 USING_NS_CC;
 
-static cocos2d::Size designResolutionSize = cocos2d::Size(720, 480);
+/*static cocos2d::Size designResolutionSize = cocos2d::Size(720, 480);
 static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
+static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
+static cocos2d::Size largeResolutionSize = cocos2d::Size(1024, 768);*/
+static cocos2d::Size designResolutionSize = cocos2d::Size(1024, 768);
+static cocos2d::Size smallResolutionSize = cocos2d::Size(1024, 768);
 static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
 static cocos2d::Size largeResolutionSize = cocos2d::Size(1024, 768);
 
@@ -80,8 +84,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	//Global::score = 1;
     // create a scene. it's an autorelease object
     auto scene = BeginScene::createScene();
+	auto scene1 = LevelOne::createScene(1);
     // run
-    director->runWithScene(scene);
+    director->runWithScene(scene1);
 
 	//// create a scene. it's an autorelease object
 	//auto scene = LevelOne::createScene(1);
