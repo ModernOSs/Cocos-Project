@@ -192,7 +192,7 @@ void LevelTwo::addBackground() {
 
 void LevelTwo::addEnemies() {
 	for (int i = 0; i < 2; ++i) {
-		enemies[i] = Sprite::create("barnacle.png");
+		enemies[i] = Sprite::create("barnacle0.png");
 		enemies[i]->setScale(scale, scale);
 		enemies[i]->setPosition(Vec2(fragileGround[i]->getPositionX(), fragileWall[0]->getPositionY()));
 		enemies[i]->setPhysicsBody(PhysicsBody::createBox(Size(enemies[i]->getContentSize().width,

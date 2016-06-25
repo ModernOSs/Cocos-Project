@@ -70,22 +70,29 @@ void BeginScene::addBackground() {
 			ground[i]->getContentSize().height),
 			PhysicsMaterial(100.0f, 1.0f, 0.5f)));
 		ground[i]->getPhysicsBody()->setDynamic(false);
-		this->addChild(ground[i], 0);
+		this->addChild(ground[i], 1);
 	}
 
-	auto label = Label::createWithTTF("Wonderland", "fonts\\Marker Felt.ttf", 150 * scale);
+	auto white = Sprite::create("white.png");
+	white->setScale(scale * 12, scale * 3);
+	white->setPosition(visibleSize.width / 2, visibleSize.height / 2 + white->getContentSize().height * 0.75);
+	white->setOpacity(128);
+	this->addChild(white, 0);
+
+	auto label = Label::createWithTTF("Wonderland", "fonts\\Marker Felt Wide.ttf", 180 * scale);
 	label->setPosition(Vec2(visibleSize.width / 2,
-		visibleSize.height - label->getContentSize().height));
-	label->setTextColor(Color4B(128, 0, 0, 255));
+		visibleSize.height - label->getContentSize().height * 1.5));
+	label->setTextColor(Color4B(114, 187, 192, 255));
 	this->addChild(label, 1);
 
 	sign = Sprite::create("sign.png");
 	sign->setScale(scale + 0.2);
-	sign->setPosition(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.4);
-	this->addChild(sign, 1);
+	sign->setPosition(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.6);
+	this->addChild(sign, 0);
 
-	auto Begin = Label::createWithTTF("Begin", "fonts\\Marker Felt.ttf", 60 * scale);
-	Begin->setPosition(Size(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.2));
+	auto Begin = Label::createWithTTF("PLAY", "fonts\\Marker Felt Wide.ttf", 65 * scale);
+	Begin->setPosition(Size(visibleSize.width - sign->getContentSize().width * scale * 2, ground[0]->getContentSize().width * scale + sign->getContentSize().height * scale / 1.3));
+	Begin->setTextColor(Color4B(255, 255, 255, 180));
 	this->addChild(Begin, 1);
 }
 
@@ -109,7 +116,7 @@ void BeginScene::addPlayer() {
 	auto beeAnimate = Animate::create(beeFly);
 	bee = Sprite::create("bee.png");
 	bee->setScale(scale);
-	bee->setPosition(visibleSize.width / 2, visibleSize.height - 300*scale);
+	bee->setPosition(visibleSize.width / 2, visibleSize.height - 600*scale);
 	bee->runAction(RepeatForever::create(beeAnimate));
 	this->addChild(bee, 1);
 }
@@ -161,7 +168,7 @@ void BeginScene::update(float f) {
 	}
 
 	float moveTo = bee->getPositionX();
-	if (left && moveTo <= 100 * scale) { left = false; bee->setFlippedX(true); }
+	if (left && moveTo <= 1100 * scale) { left = false; bee->setFlippedX(true); }
 	else if (!left && moveTo >= visibleSize.width - 100 * scale) { left = true; bee->setFlippedX(false);}
 	moveTo += left ? -2 * scale : 2 * scale;
 	bee->setPositionX(moveTo);
