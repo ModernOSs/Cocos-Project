@@ -39,7 +39,9 @@ private:
 	bool isChainBroken = 0;
 	Vector<Sprite*> diamond;
 	Sprite* exit;
-	int score;
+	MenuItemImage* restartMenu;
+	Menu* restart;
+	bool initial;
 
 	// ¶¯»­
 	int keyCount = 0;
@@ -63,7 +65,6 @@ private:
 	void initaction();
 
 	void addCamera();
-	void win(bool isWin);
 	void goBack(Ref* pSender);
 
 	void addContactListener();

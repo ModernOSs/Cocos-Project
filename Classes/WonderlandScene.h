@@ -24,15 +24,21 @@ private:
 	Sprite* circle;
 	int velocity = 0;
 	Sprite* ground[25];
+	Vector<Sprite*> diamond;
 	Sprite* stone[11];
 	Sprite* box;
+	Sprite* hint[3];
 	Sprite* isPlayerOnGround[16];
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
 	PhysicsJointPin* connect;
+	Sprite* exit;
 	bool isChainBroken = 0;
+	MenuItemImage* restartMenu;
+	Menu* restart;
+	bool initial;
 
 	// ¶¯»­
 	int keyCount = 0;

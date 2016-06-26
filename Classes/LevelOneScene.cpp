@@ -1,4 +1,5 @@
 #include "LevelOneScene.h"
+#include "SelectScene.h"
 #include <string>
 using namespace std;
 #include "SimpleAudioEngine.h"
@@ -25,7 +26,7 @@ bool LevelOne::init() {
 		return false;
 	}
 
-	score = 0;
+	initial = 1;
 	visibleSize = Director::getInstance()->getVisibleSize();
 
 	preloadMusic();
@@ -46,11 +47,16 @@ bool LevelOne::init() {
 }
 
 void LevelOne::preloadMusic() {
-	// TODO
+	auto autio = SimpleAudioEngine::getInstance();
+	autio->preloadEffect("music/win.wav");
+	autio->preloadEffect("music/diamond.wav");
+	autio->preloadEffect("music/bullet.wav");
+	autio->preloadBackgroundMusic("music/bgm.mp3");
 }
 
 void LevelOne::playBgm() {
-	// TODO
+	auto autio = SimpleAudioEngine::getInstance();
+	autio->playBackgroundMusic("music/bgm.mp3", true);
 }
 
 void LevelOne::addBackground() {
@@ -118,6 +124,14 @@ void LevelOne::addBackground() {
 		ground[0]->getContentSize().height * scale * 1.5);
 
 	this->addChild(exit, 3);
+
+	//添加重启按钮
+	restartMenu = MenuItemImage::create("restart.png", "restart.png", [&](Ref* pSender) { auto gamescene = SelectScene::createScene(); Director::getInstance()->replaceScene(gamescene); });
+	restartMenu->setScale(scale - 0.2, scale - 0.2);
+	restartMenu->setPosition(restartMenu->getContentSize().width / 2, visibleSize.height - restartMenu->getContentSize().height / 4.3);
+	restart = Menu::createWithItem(restartMenu);
+	restart->setPosition(Vec2::ZERO);
+	this->addChild(restart, 4);
 
 	// 设置易碎的土块
 	for (unsigned int j = 0; j < 4; j++)
@@ -358,7 +372,7 @@ void LevelOne::update(float f) {
 		count = 0;
 		circle->runAction(RotateTo::create(0.2f, -(player->getPosition() - mousePosition).getAngle() * 180 / 3.1415926 + 90));
 	}
-	static bool initial = 1;
+	
 	if (initial) {
 		//  杆和球
 		auto upperBound = Sprite::create("stoneCenter.png");
@@ -420,10 +434,12 @@ void LevelOne::update(float f) {
 
 		initial = 0;
 	}
+	
+	restartMenu->setPositionX(camera->getPosition().x - restartMenu->getContentSize().width * 1.9);
 
-	Sprite* board;
 	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
-		this->unschedule(schedule_selector(LevelOne::update));
+		Sprite* board;
+		int score = 3 - diamond.size();
 		if (score == 0) board = Sprite::create("greyBoard_win0.png");
 		else if (score == 1) board = Sprite::create("greyBoard_win1.png");
 		else if (score == 2) board = Sprite::create("greyBoard_win2.png");
@@ -431,6 +447,9 @@ void LevelOne::update(float f) {
 		board->setScale(scale + 0.5);
 		board->setPosition(Vec2(camera->getPosition().x + board->getContentSize().width * scale * 0.04, camera->getPosition().y + 130 * scale));
 		this->addChild(board, 3);
+		restartMenu->setScale(scale, scale);
+		restartMenu->setPosition(board->getPositionX(), board->getPositionY() - restartMenu->getContentSize().width / 3);
+		this->unschedule(schedule_selector(LevelOne::update));
 	}
 }
 
@@ -529,15 +548,18 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 		{
 			if ((sp1->getTag() == 0 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 0))
 			{
-				score++;
+				auto autio = SimpleAudioEngine::getInstance();
+				autio->playEffect("music/diamond.wav", false, 1.0f, 1.0f, 1.0f);
 				if (sp1 != NULL && sp1->getTag()== 7)
 				{
 					sp1->removeFromParentAndCleanup(true);
+					diamond.erase(diamond.find(sp1));
 					sp1 = NULL;
 				}
 				if (sp2 != NULL && sp2->getTag() == 7)
 				{
 					sp2->removeFromParentAndCleanup(true);
+					diamond.erase(diamond.find(sp2));
 					sp2 = NULL;
 				}
 			}

@@ -8,7 +8,7 @@ using namespace CocosDenshion;
 
 Scene* Wonderland::createScene(int game) {
     auto scene = Scene::createWithPhysics();
-    scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    // scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
 	scene->getPhysicsWorld()->setAutoStep(false);
 
@@ -21,7 +21,6 @@ bool Wonderland::init() {
     if (!Layer::init()) {
         return false;
     }
-
     visibleSize = Director::getInstance()->getVisibleSize();
 
     preloadMusic();
@@ -78,16 +77,80 @@ void Wonderland::addBackground() {
 		ground[i]->getPhysicsBody()->setCategoryBitmask(0xFF);
 		ground[i]->getPhysicsBody()->setCollisionBitmask(0xFF);
 		ground[i]->getPhysicsBody()->setContactTestBitmask(0xFF);
+
+		if (i > 8 && i < 18)
+			continue;
 		this->addChild(ground[i], 0);
 	}
+
+	//添加钻石
+	for (int i = 0; i < 3; i++) {
+		auto dia = Sprite::create("HUD//hudJewel_blue.png");
+		dia->setPhysicsBody(PhysicsBody::createBox(Size(dia->getContentSize().width*0.8,
+			dia->getContentSize().height*0.8),
+			PhysicsMaterial(0.0f, 0.0f, 0.0f),
+			Vec2(0, -dia->getContentSize().height * 0.1)));
+		dia->getPhysicsBody()->setDynamic(false);
+		dia->setTag(7);
+		dia->getPhysicsBody()->setCategoryBitmask(0xFF);
+		dia->getPhysicsBody()->setCollisionBitmask(0xFF);
+		dia->getPhysicsBody()->setContactTestBitmask(0xFF);
+		dia->setScale(scale, scale);
+		diamond.pushBack(dia);
+	}
+	diamond.at(0)->setPosition(3 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 2);
+	this->addChild(diamond.at(0), 2);
+	diamond.at(1)->setPosition(20 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 6);
+	this->addChild(diamond.at(1), 2);
+	diamond.at(2)->setPosition(13 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 2);
+	this->addChild(diamond.at(2), 2);
+
+	//添加重启按钮
+	restartMenu = MenuItemImage::create("restart.png", "restart.png", [&](Ref* pSender) { auto gamescene = SelectScene::createScene(); Director::getInstance()->replaceScene(gamescene); });
+	restartMenu->setScale(scale - 0.2, scale - 0.2);
+	restartMenu->setPosition(restartMenu->getContentSize().width / 2, visibleSize.height - restartMenu->getContentSize().height / 4.3);
+	restart = Menu::createWithItem(restartMenu);
+	restart->setPosition(Vec2::ZERO);
+	this->addChild(restart, 4);
 
 	isPlayerOnGround[0] = Sprite::create("isPlayerOnGround.png");
 	isPlayerOnGround[0]->setScale(scale * 24, scale);
 	isPlayerOnGround[0]->setPosition(ground[12]->getPosition() + Vec2(0, isPlayerOnGround[0]->getContentSize().height * scale / 2 +
 		                             ground[12]->getContentSize().height * scale / 2));
 
-	// isPlayerOnGround[0]->setOpacity(0);
+	isPlayerOnGround[0]->setOpacity(0);
 	this->addChild(isPlayerOnGround[0], 0);
+
+	//添加出口
+	exit = Sprite::create("signExit.png");
+	exit->setScale(scale, scale);
+	exit->setPosition(22 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 1.5);
+
+	this->addChild(exit, 3);
+
+	// 添加提示语
+	hint[0] = Sprite::create("hint1.png");
+	hint[0]->setScale(scale * 0.5, scale * 0.5);
+	hint[0]->setPosition(3 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 3.3);
+	hint[0]->setOpacity(180);
+	this->addChild(hint[0], 4);
+	hint[1] = Sprite::create("hint2.png");
+	hint[1]->setScale(scale * 0.4, scale * 0.4);
+	hint[1]->setPosition(visibleSize.width / 2 + ground[0]->getContentSize().width * scale * 2,
+		                 visibleSize.height - ground[0]->getContentSize().width * scale * 1.5);
+	hint[1]->setOpacity(180);
+	this->addChild(hint[1], 4);
+	hint[2] = Sprite::create("hint3.png");
+	hint[2]->setScale(scale * 0.4, scale * 0.4);
+	hint[2]->setPosition(13 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+						 ground[0]->getContentSize().height * scale * 5);
+	hint[2]->setOpacity(180);
+	this->addChild(hint[2], 4);
 
 	// 设置石块
 	for (unsigned int i = 0; i < 11; i++)
@@ -113,7 +176,7 @@ void Wonderland::addBackground() {
 	isPlayerOnGround[1]->setPosition(stone[5]->getPosition() + Vec2(0, isPlayerOnGround[1]->getContentSize().height * scale / 2 +
 		                             stone[5]->getContentSize().height * scale / 2));
 
-	// isPlayerOnGround[1]->setOpacity(0);
+	isPlayerOnGround[1]->setOpacity(0);
 	this->addChild(isPlayerOnGround[1], 0);
 }
 
@@ -192,10 +255,21 @@ void Wonderland::update(float f) {
 	circle->setPosition(player->getPosition());
 	static int count = 0;
 	count++;
-	if (count == 20)
+	if (count % 20 == 0)
+	{
+		circle->runAction(RotateTo::create(0.2f, -(player->getPosition() - mousePosition).getAngle() * 180 / 3.1415926 + 90));
+	}
+
+	// 判断hint
+	if (count == 300)
 	{
 		count = 0;
-		circle->runAction(RotateTo::create(0.2f, -(player->getPosition() - mousePosition).getAngle() * 180 / 3.1415926 + 90));
+		if (player->getPositionX() > hint[0]->getPositionX())
+			hint[0]->runAction(FadeOut::create(1.0f));
+		if (player->getPositionX() > hint[1]->getPositionX())
+			hint[1]->runAction(FadeOut::create(1.0f));
+		if (player->getPositionX() > hint[2]->getPositionX())
+			hint[2]->runAction(FadeOut::create(1.0f));
 	}
 
 	// 添加铰链
@@ -246,10 +320,10 @@ void Wonderland::update(float f) {
 		this->addChild(box);
 
 		isPlayerOnGround[2] = Sprite::create("isPlayerOnBox.png");
-		float temp = scale * 1.1;
+		float temp = scale * 1.15;
 		isPlayerOnGround[2]->setScale(temp, temp);
 		isPlayerOnGround[2]->setPosition(box->getPosition());
-		// isPlayerOnGround[2]->setOpacity(0);
+		isPlayerOnGround[2]->setOpacity(0);
 		this->addChild(isPlayerOnGround[2]);
 
 		auto fixedpoint_1 = PhysicsJointPin::construct(upperBound->getPhysicsBody(), chain->getPhysicsBody(),Vec2(upperBound->getPosition().x, upperBound->getBoundingBox().getMinY()));
@@ -264,6 +338,23 @@ void Wonderland::update(float f) {
 	if (box->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
 		box->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
 		isPlayerOnGround[2]->setPosition(box->getPosition());
+
+	restartMenu->setPositionX(camera->getPosition().x - restartMenu->getContentSize().width * 1.9);
+
+	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
+		Sprite* board;
+		this->unschedule(schedule_selector(Wonderland::update));
+		int score = 3 - diamond.size();
+		if (score == 0) board = Sprite::create("greyBoard_win0.png");
+		else if (score == 1) board = Sprite::create("greyBoard_win1.png");
+		else if (score == 2) board = Sprite::create("greyBoard_win2.png");
+		else board = Sprite::create("greyBoard_win3.png");
+		board->setScale(scale + 0.5);
+		board->setPosition(Vec2(camera->getPosition().x + board->getContentSize().width * scale * 0.04, camera->getPosition().y + 130 * scale));
+		this->addChild(board, 3);
+		restartMenu->setScale(scale, scale);
+		restartMenu->setPosition(board->getPositionX(), board->getPositionY() - restartMenu->getContentSize().width / 3);
+	}
 }
 
 bool Wonderland::onContactBegan(PhysicsContact& contact) {
@@ -305,6 +396,45 @@ bool Wonderland::onContactBegan(PhysicsContact& contact) {
 							sp2 = NULL;
 						}
 					isChainBroken = 1;
+				}
+			}
+		}
+
+		// player碰钻石
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 0 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 0))
+			{
+				if (sp1 != NULL && sp1->getTag() == 7)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					diamond.erase(diamond.find(sp1));
+					sp1 = NULL;
+				}
+				if (sp2 != NULL && sp2->getTag() == 7)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					diamond.erase(diamond.find(sp2));
+					sp2 = NULL;
+				}
+			}
+		}
+
+		// 子弹碰除了关节、土块的别的物体
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 2 && sp2->getTag() != 1 && sp2->getTag() != 4) ||
+				(sp2->getTag() == 2 && sp1->getTag() != 1 && sp1->getTag() != 4))
+			{
+				if (sp1 != NULL && sp1->getTag() == 2)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					sp1 = NULL;
+				}
+				if (sp2 != NULL && sp2->getTag() == 2)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					sp2 = NULL;
 				}
 			}
 		}

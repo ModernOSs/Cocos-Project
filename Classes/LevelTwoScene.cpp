@@ -1,6 +1,7 @@
 #include "LevelTwoScene.h"
 #include <string>
 using namespace std;
+#include "SelectScene.h"
 #include "SimpleAudioEngine.h"
 
 using namespace CocosDenshion;
@@ -9,13 +10,11 @@ void LevelTwo::setPhysicsWorld(PhysicsWorld* world) { m_world = world; }
 
 Scene* LevelTwo::createScene(int game) {
 	auto scene = Scene::createWithPhysics();
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	//scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
 	scene->getPhysicsWorld()->setAutoStep(false);
-
 	auto layer = LevelTwo::create();
 	layer->setPhysicsWorld(scene->getPhysicsWorld());
-
 	scene->addChild(layer);
 	return scene;
 }
@@ -41,7 +40,6 @@ bool LevelTwo::init() {
 	addMouseListener();
 
 	this->schedule(schedule_selector(LevelTwo::update), 0.01f);
-	this->schedule(schedule_selector(LevelTwo::bulletRemovement), 3.0f);
 	return true;
 }
 
@@ -94,7 +92,7 @@ void LevelTwo::addBackground() {
 			platform[i]->setPosition(ground[3 + i]->getPosition() + Vec2(ground[0]->getContentSize().width * scale, ground[0]->getContentSize().height * 0.5 * scale));
 		}
 		else if (i == 1) {
-			platform[i]->setPosition(ground[18 + i]->getPosition() + Vec2(ground[0]->getContentSize().width * scale, ground[0]->getContentSize().height * 4 * scale));
+			platform[i]->setPosition(ground[19 + i]->getPosition() + Vec2(ground[0]->getContentSize().width * scale, ground[0]->getContentSize().height * 4 * scale));
 		}
 		platform[i]->setPhysicsBody(PhysicsBody::createBox(Size(platform[i]->getContentSize().width,
 			platform[i]->getContentSize().height * 50.0 / 128.0),
@@ -149,7 +147,7 @@ void LevelTwo::addBackground() {
 		fragileWall[i]->setPosition(ground[28]->getPosition() + Vec2(0, fragileWall[i]->getContentSize().height * (i + 1) * scale));
 		fragileWall[i]->setPhysicsBody(PhysicsBody::createBox(Size(fragileWall[i]->getContentSize().width,
 			fragileWall[i]->getContentSize().height),
-			PhysicsMaterial(100.0f, 1.0f, 0.3f)));
+			PhysicsMaterial(100.0f, 0.0f, 0.3f)));
 		fragileWall[i]->getPhysicsBody()->setDynamic(false);
 		// 土块块的Tag为1 可以被打破
 		fragileWall[i]->setTag(1);
@@ -165,7 +163,7 @@ void LevelTwo::addBackground() {
 		fragileGround[i]->setPosition(ground[26 + i]->getPosition() + Vec2(0, fragileGround[i]->getContentSize().height * 4 * scale));
 		fragileGround[i]->setPhysicsBody(PhysicsBody::createBox(Size(fragileGround[i]->getContentSize().width,
 			fragileGround[i]->getContentSize().height),
-			PhysicsMaterial(100.0f, 1.0f, 0.5f)));
+			PhysicsMaterial(100.0f, 0.0f, 0.5f)));
 		fragileGround[i]->getPhysicsBody()->setDynamic(false);
 		// 土块块的Tag为1 可以被打破
 		fragileGround[i]->setTag(1);
@@ -184,12 +182,50 @@ void LevelTwo::addBackground() {
 		bigStone->getContentSize().height),
 		PhysicsMaterial(100.0f, 0.0f, 0.5f)));
 	// 大石块的Tag为7  不能被打破
-	bigStone->setTag(7);
+	bigStone->setTag(9);
 	// 设置掩码
 	bigStone->getPhysicsBody()->setCategoryBitmask(0xFF);
 	bigStone->getPhysicsBody()->setCollisionBitmask(0xFF);
 	bigStone->getPhysicsBody()->setContactTestBitmask(0xFF);
 	this->addChild(bigStone, 0);
+
+	//添加钻石
+	for (int i = 0; i < 3; i++) {
+		auto dia = Sprite::create("HUD//hudJewel_blue.png");
+		dia->setPhysicsBody(PhysicsBody::createBox(Size(dia->getContentSize().width * 0.8,
+			dia->getContentSize().height * 0.8),
+			PhysicsMaterial(0.0f, 0.0f, 0.0f),
+			Vec2(0, -dia->getContentSize().height * 0.1)));
+		dia->getPhysicsBody()->setDynamic(false);
+		dia->setTag(7);
+		dia->getPhysicsBody()->setCategoryBitmask(0xF0);
+		dia->getPhysicsBody()->setCollisionBitmask(0xF0);
+		dia->getPhysicsBody()->setContactTestBitmask(0xFF);
+		dia->setScale(scale, scale);
+		diamond.pushBack(dia);
+	}
+	diamond.at(0)->setPosition(ground[5]->getPositionX() + ground[0]->getContentSize().width * 0.5, ground[0]->getContentSize().height * scale * 7.5);
+	this->addChild(diamond.at(0), 2);
+	diamond.at(1)->setPosition((ground[12]->getPositionX() + ground[13]->getPositionX()) / 2, ground[0]->getContentSize().height * scale * 6.5);
+	this->addChild(diamond.at(1), 2);
+	diamond.at(2)->setPosition(ground[19]->getPositionX(), ground[0]->getContentSize().height * scale * 3);
+	this->addChild(diamond.at(2), 2);
+
+	//添加出口
+	exit = Sprite::create("signExit.png");
+	exit->setScale(scale, scale);
+	exit->setPosition(29 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+		ground[0]->getContentSize().height * scale * 1.5);
+
+	this->addChild(exit, 3);
+
+	//添加重启按钮
+	restartMenu = MenuItemImage::create("restart.png", "restart.png", [&](Ref* pSender) { auto gamescene = SelectScene::createScene(); Director::getInstance()->replaceScene(gamescene); });
+	restartMenu->setScale(scale - 0.2, scale - 0.2);
+	restartMenu->setPosition(restartMenu->getContentSize().width / 2, visibleSize.height - restartMenu->getContentSize().height / 4.3);
+	restart = Menu::createWithItem(restartMenu);
+	restart->setPosition(Vec2::ZERO);
+	this->addChild(restart, 4);
 }
 
 void LevelTwo::addEnemies() {
@@ -260,15 +296,15 @@ void LevelTwo::addEnemies() {
 	animation_monster_move2->setLoops(1024);
 	monster_move2 = Animate::create(animation_monster_move2);
 
-	ActionInterval *jump = JumpBy::create(1.8f, Vec2(0, 0), ground[0]->getContentSize().height * scale * 1.5, 1);
+	ActionInterval *jump = JumpBy::create(1.8f, Vec2(0, 0), ground[0]->getContentSize().height * scale * 1.7, 1);
 	enemies2[0]->runAction(RepeatForever::create(jump));
 
 	enemies2[0]->runAction(monster_move2);
 }
 
-void LevelTwo::bulletRemovement(float dt) {
-	if (bullets.size() != 0 && bullets.at(0) != NULL) {
-		bullets.at(0)->removeFromParentAndCleanup(true);
+void LevelTwo::bulletRemovement() {
+	if (bullets.size() != 0) {
+		(bullets.at(0))->removeFromParentAndCleanup(true);
 		bullets.erase(0);
 	}
 }
@@ -290,8 +326,8 @@ void LevelTwo::addPlayer() {
 	// 玩家的Tag为0
 	player->setTag(0);
 	// 设置掩码
-	player->getPhysicsBody()->setCategoryBitmask(0xFF);
-	player->getPhysicsBody()->setCollisionBitmask(0xFF);
+	player->getPhysicsBody()->setCategoryBitmask(0x0F);
+	player->getPhysicsBody()->setCollisionBitmask(0x0F);
 	player->getPhysicsBody()->setContactTestBitmask(0xFF);
 	this->addChild(circle);
 	this->addChild(player);
@@ -354,15 +390,9 @@ void LevelTwo::update(float f) {
 		circle->runAction(RotateTo::create(0.2f, -(player->getPosition() - mousePosition).getAngle() * 180 / 3.1415926 + 90));
 	}
 
-	//static bool initial = 1;
-	//if (initial) {
-
-	//	initial = 0;
-	//}
-
 	//平台移动
-	static double cnt = 0;
-	static double dir = 0.8;
+	/*static double cnt = 0;
+	static double dir = 0.8;*/
 	cnt += f;
 	if (cnt > 2.5) {
 		cnt = 0.0;
@@ -379,6 +409,26 @@ void LevelTwo::update(float f) {
 		platform2[i + 2]->setPosition(platform2[i + 2]->getPosition() + Vec2(dir, 0));
 	}
 
+	if (player->getPositionY() < 0 || flag == 1) {
+		//Director::getInstance()->replaceScene(LevelTwo::createScene(3));
+	}
+
+	restartMenu->setPositionX(camera->getPosition().x - restartMenu->getContentSize().width * 1.9);
+
+	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
+		Sprite* board;
+		int score = 3 - diamond.size();
+		if (score == 0) board = Sprite::create("greyBoard_win0.png");
+		else if (score == 1) board = Sprite::create("greyBoard_win1.png");
+		else if (score == 2) board = Sprite::create("greyBoard_win2.png");
+		else board = Sprite::create("greyBoard_win3.png");
+		board->setScale(scale + 0.5);
+		board->setPosition(Vec2(camera->getPosition().x + board->getContentSize().width * scale * 0.04, camera->getPosition().y + 130 * scale));
+		this->addChild(board, 3);
+		restartMenu->setScale(scale, scale);
+		restartMenu->setPosition(board->getPositionX(), board->getPositionY() - restartMenu->getContentSize().width / 3);
+		this->unschedule(schedule_selector(LevelTwo::update));
+	}
 }
 
 bool LevelTwo::onContactBegan(PhysicsContact& contact) {
@@ -386,9 +436,10 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 	auto bodyB = contact.getShapeB()->getBody();
 	auto sp1 = (Sprite*)bodyA->getNode();
 	auto sp2 = (Sprite*)bodyB->getNode();
-
+	
+	// 大石块的Tag为9
 	// 怪物2tag为8
-	// 大石块的Tag为7
+	// 钻石tag为7
 	// 怪物1tag为5
 	// 地块tag为3
 	// 子弹的Tag为2
@@ -418,7 +469,7 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 		// 石块碰怪物1
 		if (sp1 != NULL && sp2 != NULL)
 		{
-			if ((sp1->getTag() == 5 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 5))
+			if ((sp1->getTag() == 5 && sp2->getTag() == 9) || (sp1->getTag() == 9 && sp2->getTag() == 5))
 			{
 				if (sp1 != NULL && sp1->getTag() == 5)
 				{
@@ -447,6 +498,27 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 					sp2->removeFromParentAndCleanup(true);
 					sp2 = NULL;
 				}
+				flag = 1;
+			}
+		}
+
+		//  player碰钻石
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 0 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 0))
+			{
+				if (sp1 != NULL && sp1->getTag() == 7)
+				{
+					sp1->removeFromParentAndCleanup(true);
+					diamond.erase(diamond.find(sp1));
+					sp1 = NULL;
+				}
+				if (sp2 != NULL && sp2->getTag() == 7)
+				{
+					sp2->removeFromParentAndCleanup(true);
+					diamond.erase(diamond.find(sp2));
+					sp2 = NULL;
+				}
 			}
 		}
 	}
@@ -464,7 +536,7 @@ void LevelTwo::mouseMove(Event* event) {
 
 void LevelTwo::mouseClick(Event* event) {
 	// 解决摄像头导致的触发两次事件的问题
-	static bool doubleClick = false;
+	//static bool doubleClick = false;
 	doubleClick = !doubleClick;
 	if (doubleClick)
 	{
@@ -482,14 +554,18 @@ void LevelTwo::mouseClick(Event* event) {
 		bullet->getPhysicsBody()->setCategoryBitmask(0xFF);
 		bullet->getPhysicsBody()->setCollisionBitmask(0xFF);
 		bullet->getPhysicsBody()->setContactTestBitmask(0xFF);
-		bullets.pushBack(bullet);
 		this->addChild(bullet);
+		bullets.pushBack(bullet);
+		auto bulletFadeOut = FadeOut::create(0.5f);
+		auto callback = CallFunc::create(this, callfunc_selector(LevelTwo::bulletRemovement));
+		auto sequence = Sequence::create(DelayTime::create(1.0f), bulletFadeOut, callback, NULL);
+		bullet->runAction(sequence);
 	}
 }
 
 void LevelTwo::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 	initaction();
-	static char lastcid = 'D';
+	//static char lastcid = 'D';
 	switch (code)
 	{
 	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
@@ -520,7 +596,7 @@ void LevelTwo::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		if ((int)player->getPhysicsBody()->getVelocity().y == 0 ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox())) {
-			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, visibleSize.height * 1.0f));//  0.9375f
+			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, visibleSize.height * 0.98f));//  0.9375f
 		}
 		player->stopAllActions();
 		player->runAction(action_jump);

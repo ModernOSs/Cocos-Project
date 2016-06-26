@@ -27,17 +27,24 @@ private:
 	Sprite* isPlayerOnGround[16];
 	Sprite* fragileGround[100];
 	Sprite* fragileWall[10];
-	Sprite* platform[4];
+	Sprite* platform[2];
 	Sprite* platform2[4];
 	Sprite* enemies[6];
 	Sprite* enemies2[5];
 	Sprite* bigStone;
 	Vector<Sprite *> bullets;
+	Vector<Sprite*> diamond;
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
-	bool isChainBroken = 0;
+	int flag = 0, count = 0;
+	double cnt = 0, dir = 0.8;
+	bool doubleClick = false;
+	char lastcid = 'D';
+	Sprite* exit;
+	MenuItemImage* restartMenu;
+	Menu* restart;
 
 	// ¶¯»­
 	int keyCount = 0;
@@ -72,5 +79,5 @@ private:
 	void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
 
 	void addEnemies();
-	void bulletRemovement(float dt);
+	void bulletRemovement();
 };
