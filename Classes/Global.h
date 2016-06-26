@@ -12,8 +12,6 @@ public:
 	Global();
 	~Global();
 	static long score;
-	static int level_one_score;
-	static int level_two_score;
 };
 
 #endif
