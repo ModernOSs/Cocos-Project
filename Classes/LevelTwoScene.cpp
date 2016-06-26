@@ -29,11 +29,10 @@ bool LevelTwo::init() {
 	preloadMusic();
 	playBgm();
 
+	addCamera();
 	addBackground();
 	addPlayer();
 	addEnemies();
-
-	addCamera();
 
 	addContactListener();
 	addKeyboardListener();
@@ -202,14 +201,14 @@ void LevelTwo::addBackground() {
 		dia->getPhysicsBody()->setCollisionBitmask(0xF0);
 		dia->getPhysicsBody()->setContactTestBitmask(0xFF);
 		dia->setScale(scale, scale);
-		diamond.pushBack(dia);
+		diamond[i] = dia;
 	}
-	diamond.at(0)->setPosition(ground[5]->getPositionX() + ground[0]->getContentSize().width * 0.5, ground[0]->getContentSize().height * scale * 7.5);
-	this->addChild(diamond.at(0), 2);
-	diamond.at(1)->setPosition((ground[12]->getPositionX() + ground[13]->getPositionX()) / 2, ground[0]->getContentSize().height * scale * 6.5);
-	this->addChild(diamond.at(1), 2);
-	diamond.at(2)->setPosition(ground[19]->getPositionX(), ground[0]->getContentSize().height * scale * 3);
-	this->addChild(diamond.at(2), 2);
+	diamond[0]->setPosition(ground[5]->getPositionX() + ground[0]->getContentSize().width * 0.5, ground[0]->getContentSize().height * scale * 7.5);
+	this->addChild(diamond[0], 2);
+	diamond[1]->setPosition((ground[12]->getPositionX() + ground[13]->getPositionX()) / 2, ground[0]->getContentSize().height * scale * 6.5);
+	this->addChild(diamond[1], 2);
+	diamond[2]->setPosition(ground[19]->getPositionX(), ground[0]->getContentSize().height * scale * 3);
+	this->addChild(diamond[2], 2);
 
 	//添加出口
 	exit = Sprite::create("signExit.png");
@@ -222,7 +221,7 @@ void LevelTwo::addBackground() {
 	//添加重启按钮
 	restartMenu = MenuItemImage::create("restart.png", "restart.png", [&](Ref* pSender) { auto gamescene = SelectScene::createScene(); Director::getInstance()->replaceScene(gamescene); });
 	restartMenu->setScale(scale - 0.2, scale - 0.2);
-	restartMenu->setPosition(restartMenu->getContentSize().width / 2, visibleSize.height - restartMenu->getContentSize().height / 4.3);
+	restartMenu->setPosition(camera->getPosition().x - restartMenu->getContentSize().width * 1.9, visibleSize.height - restartMenu->getContentSize().height / 4.3);
 	restart = Menu::createWithItem(restartMenu);
 	restart->setPosition(Vec2::ZERO);
 	this->addChild(restart, 4);
@@ -417,7 +416,10 @@ void LevelTwo::update(float f) {
 
 	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
 		Sprite* board;
-		int score = 3 - diamond.size();
+		int score = 0;
+		for (int i = 0; i < 3; i++)
+			if (diamond[i] == NULL)
+				score++;
 		if (score == 0) board = Sprite::create("greyBoard_win0.png");
 		else if (score == 1) board = Sprite::create("greyBoard_win1.png");
 		else if (score == 2) board = Sprite::create("greyBoard_win2.png");
@@ -510,13 +512,11 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 				if (sp1 != NULL && sp1->getTag() == 7)
 				{
 					sp1->removeFromParentAndCleanup(true);
-					diamond.erase(diamond.find(sp1));
 					sp1 = NULL;
 				}
 				if (sp2 != NULL && sp2->getTag() == 7)
 				{
 					sp2->removeFromParentAndCleanup(true);
-					diamond.erase(diamond.find(sp2));
 					sp2 = NULL;
 				}
 			}

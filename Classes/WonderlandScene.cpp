@@ -22,14 +22,15 @@ bool Wonderland::init() {
         return false;
     }
     visibleSize = Director::getInstance()->getVisibleSize();
+	initial = 1;
 
     preloadMusic();
     playBgm();
 
+	addCamera();
+
     addBackground();
     addPlayer();
-
-	addCamera();
 
 	addContactListener();
     addKeyboardListener();
@@ -96,22 +97,22 @@ void Wonderland::addBackground() {
 		dia->getPhysicsBody()->setCollisionBitmask(0xFF);
 		dia->getPhysicsBody()->setContactTestBitmask(0xFF);
 		dia->setScale(scale, scale);
-		diamond.pushBack(dia);
+		diamond[i] = dia;
 	}
-	diamond.at(0)->setPosition(3 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+	diamond[0]->setPosition(3 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
 		ground[0]->getContentSize().height * scale * 2);
-	this->addChild(diamond.at(0), 2);
-	diamond.at(1)->setPosition(20 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+	this->addChild(diamond[0], 2);
+	diamond[1]->setPosition(20 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
 		ground[0]->getContentSize().height * scale * 6);
-	this->addChild(diamond.at(1), 2);
-	diamond.at(2)->setPosition(13 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+	this->addChild(diamond[1], 2);
+	diamond[2]->setPosition(13 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
 		ground[0]->getContentSize().height * scale * 2);
-	this->addChild(diamond.at(2), 2);
+	this->addChild(diamond[2], 2);
 
 	//添加重启按钮
 	restartMenu = MenuItemImage::create("restart.png", "restart.png", [&](Ref* pSender) { auto gamescene = SelectScene::createScene(); Director::getInstance()->replaceScene(gamescene); });
 	restartMenu->setScale(scale - 0.2, scale - 0.2);
-	restartMenu->setPosition(restartMenu->getContentSize().width / 2, visibleSize.height - restartMenu->getContentSize().height / 4.3);
+	restartMenu->setPosition(camera->getPosition().x - restartMenu->getContentSize().width * 1.9, visibleSize.height - restartMenu->getContentSize().height / 4.3);
 	restart = Menu::createWithItem(restartMenu);
 	restart->setPosition(Vec2::ZERO);
 	this->addChild(restart, 4);
@@ -273,7 +274,6 @@ void Wonderland::update(float f) {
 	}
 
 	// 添加铰链
-	static bool initial = 1;
 	if (initial)
 	{
 		auto upperBound = Sprite::create("stoneCenter.png");
@@ -335,16 +335,20 @@ void Wonderland::update(float f) {
 	}
 	initial = 0;
 
-	if (box->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
-		box->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
-		isPlayerOnGround[2]->setPosition(box->getPosition());
+	if (box != NULL)
+		if (box->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
+			box->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()))
+			isPlayerOnGround[2]->setPosition(box->getPosition());
 
 	restartMenu->setPositionX(camera->getPosition().x - restartMenu->getContentSize().width * 1.9);
 
 	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
 		Sprite* board;
 		this->unschedule(schedule_selector(Wonderland::update));
-		int score = 3 - diamond.size();
+		int score = 0;
+		for (int i = 0; i < 3; i++)
+			if (diamond[i] == NULL)
+				score++;
 		if (score == 0) board = Sprite::create("greyBoard_win0.png");
 		else if (score == 1) board = Sprite::create("greyBoard_win1.png");
 		else if (score == 2) board = Sprite::create("greyBoard_win2.png");
@@ -408,13 +412,11 @@ bool Wonderland::onContactBegan(PhysicsContact& contact) {
 				if (sp1 != NULL && sp1->getTag() == 7)
 				{
 					sp1->removeFromParentAndCleanup(true);
-					diamond.erase(diamond.find(sp1));
 					sp1 = NULL;
 				}
 				if (sp2 != NULL && sp2->getTag() == 7)
 				{
 					sp2->removeFromParentAndCleanup(true);
-					diamond.erase(diamond.find(sp2));
 					sp2 = NULL;
 				}
 			}

@@ -32,10 +32,11 @@ bool LevelOne::init() {
 	preloadMusic();
 	playBgm();
 
+	addCamera();
+
 	addBackground();
 	addPlayer();
 	addEnemies();
-	addCamera();
 
 	addContactListener();
 	addKeyboardListener();
@@ -51,6 +52,7 @@ void LevelOne::preloadMusic() {
 	autio->preloadEffect("music/win.wav");
 	autio->preloadEffect("music/diamond.wav");
 	autio->preloadEffect("music/bullet.wav");
+	autio->preloadEffect("music/jump.mp3");
 	autio->preloadBackgroundMusic("music/bgm.mp3");
 }
 
@@ -105,17 +107,17 @@ void LevelOne::addBackground() {
 		dia->getPhysicsBody()->setCollisionBitmask(0xFF);
 		dia->getPhysicsBody()->setContactTestBitmask(0xFF);
 		dia->setScale(scale, scale);
-		diamond.pushBack(dia);
+		diamond[i] = dia;
 	}
-	diamond.at(0)->setPosition(3 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+	diamond[0]->setPosition(3 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
 		ground[0]->getContentSize().height * scale * 4);
-	this->addChild(diamond.at(0), 2);
-	diamond.at(1)->setPosition(10 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+	this->addChild(diamond[0], 2);
+	diamond[1]->setPosition(10 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
 		ground[0]->getContentSize().height * scale * 7.5);
-	this->addChild(diamond.at(1), 2);
-	diamond.at(2)->setPosition(13 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
+	this->addChild(diamond[1], 2);
+	diamond[2]->setPosition(13 * ground[0]->getContentSize().width * scale + ground[0]->getContentSize().width * scale / 2,
 		ground[0]->getContentSize().height * scale * 2.5);
-	this->addChild(diamond.at(2), 2);
+	this->addChild(diamond[2], 2);
 
 	//添加出口
 	exit = Sprite::create("signExit.png");
@@ -128,7 +130,7 @@ void LevelOne::addBackground() {
 	//添加重启按钮
 	restartMenu = MenuItemImage::create("restart.png", "restart.png", [&](Ref* pSender) { auto gamescene = SelectScene::createScene(); Director::getInstance()->replaceScene(gamescene); });
 	restartMenu->setScale(scale - 0.2, scale - 0.2);
-	restartMenu->setPosition(restartMenu->getContentSize().width / 2, visibleSize.height - restartMenu->getContentSize().height / 4.3);
+	restartMenu->setPosition(camera->getPosition().x - restartMenu->getContentSize().width * 1.9, visibleSize.height - restartMenu->getContentSize().height / 4.3);
 	restart = Menu::createWithItem(restartMenu);
 	restart->setPosition(Vec2::ZERO);
 	this->addChild(restart, 4);
@@ -438,8 +440,13 @@ void LevelOne::update(float f) {
 	restartMenu->setPositionX(camera->getPosition().x - restartMenu->getContentSize().width * 1.9);
 
 	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
+		auto autio = SimpleAudioEngine::getInstance();
+		autio->playEffect("music/win.wav", false, 1.0f, 1.0f, 1.0f);
 		Sprite* board;
-		int score = 3 - diamond.size();
+		int score = 0;
+		for (int i = 0; i < 3; i++)
+			if (diamond[i] == NULL)
+				score++;
 		if (score == 0) board = Sprite::create("greyBoard_win0.png");
 		else if (score == 1) board = Sprite::create("greyBoard_win1.png");
 		else if (score == 2) board = Sprite::create("greyBoard_win2.png");
@@ -553,13 +560,11 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 				if (sp1 != NULL && sp1->getTag()== 7)
 				{
 					sp1->removeFromParentAndCleanup(true);
-					diamond.erase(diamond.find(sp1));
 					sp1 = NULL;
 				}
 				if (sp2 != NULL && sp2->getTag() == 7)
 				{
 					sp2->removeFromParentAndCleanup(true);
-					diamond.erase(diamond.find(sp2));
 					sp2 = NULL;
 				}
 			}
@@ -609,6 +614,8 @@ void LevelOne::mouseClick(Event* event) {
 		bullet->setPosition(player->getPosition() + temp);
 		bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * 0.35, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
 		bullet->getPhysicsBody()->setGravityEnable(false);
+		auto autio = SimpleAudioEngine::getInstance();
+		autio->playEffect("music/bullet.wav", false, 1.0f, 1.0f, 1.0f);
 		bullet->getPhysicsBody()->setVelocity(temp * 8);
 		// 子弹的Tag为2
 		bullet->setTag(2);
@@ -649,7 +656,7 @@ void LevelOne::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_W:
-		CCLOG("%f", player->getPhysicsBody()->getVelocity().y);
+		SimpleAudioEngine::getInstance()->playEffect("music/jump.mp3", false, 1.0f, 1.0f, 1.0f);
 		if ((int)player->getPhysicsBody()->getVelocity().y == 0) {
 			player->getPhysicsBody()->setVelocity(Vec2(player->getPhysicsBody()->getVelocity().x, visibleSize.height * 0.9375f));
 		}

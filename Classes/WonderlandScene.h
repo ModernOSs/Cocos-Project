@@ -24,7 +24,7 @@ private:
 	Sprite* circle;
 	int velocity = 0;
 	Sprite* ground[25];
-	Vector<Sprite*> diamond;
+	Sprite* diamond[3];
 	Sprite* stone[11];
 	Sprite* box;
 	Sprite* hint[3];

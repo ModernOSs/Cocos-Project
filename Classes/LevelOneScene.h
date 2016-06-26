@@ -37,7 +37,7 @@ private:
 	double scale;
 	PhysicsJointPin* connect;
 	bool isChainBroken = 0;
-	Vector<Sprite*> diamond;
+	Sprite* diamond[3];
 	Sprite* exit;
 	MenuItemImage* restartMenu;
 	Menu* restart;

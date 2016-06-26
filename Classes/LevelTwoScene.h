@@ -33,7 +33,7 @@ private:
 	Sprite* enemies2[5];
 	Sprite* bigStone;
 	Vector<Sprite *> bullets;
-	Vector<Sprite*> diamond;
+	Sprite* diamond[3];
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
