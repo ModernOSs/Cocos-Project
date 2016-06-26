@@ -1,5 +1,6 @@
 #pragma once
 #include "cocos2d.h"
+#include <vector>
 #include "ui/CocosGUI.h"
 using namespace cocos2d::ui;
 USING_NS_CC;
@@ -14,6 +15,7 @@ public:
 	CREATE_FUNC(SelectScene);
 
 private:
+	Vector<Sprite*> diamond;
 	Size visibleSize;
 	double scale;
 };

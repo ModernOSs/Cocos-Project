@@ -25,17 +25,21 @@ private:
 	int velocity = 0;
 	Sprite* ground[25];
 	Sprite* fragileGround[100];
-	Sprite* fragileGround2[50];
+	Sprite* fragileWall[10];
 	Sprite* bigStone;
 	Sprite* saw;
 	Sprite* chain[5];
 	Sprite* isPlayerOnGround[16];
+	Sprite* enemies[6];
 	PhysicsWorld* m_world;
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
 	PhysicsJointPin* connect;
 	bool isChainBroken = 0;
+	Vector<Sprite*> diamond;
+	Sprite* exit;
+	int score;
 
 	// ¶¯»­
 	int keyCount = 0;
@@ -48,6 +52,9 @@ private:
 	Animation *animation_hit;
 	Animate *action_hit;
 
+	Sequence *jumpSequence;
+	CallFunc *callback;
+
 	void preloadMusic();
 	void playBgm();
 
@@ -56,6 +63,8 @@ private:
 	void initaction();
 
 	void addCamera();
+	void win(bool isWin);
+	void goBack(Ref* pSender);
 
 	void addContactListener();
 	void addKeyboardListener();
@@ -68,4 +77,6 @@ private:
 	void mouseClick(Event* event);
 	void onKeyPressed(EventKeyboard::KeyCode code, Event* event);
 	void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
+	
+	void addEnemies();
 };

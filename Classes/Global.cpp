@@ -1,5 +1,5 @@
 #include "Global.h"
-long Global::score = 1;
+long Global::score = 3;
 
 Global::Global()
 {
