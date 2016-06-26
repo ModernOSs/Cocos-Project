@@ -365,6 +365,10 @@ void LevelOne::update(float f) {
 	else
 		player->getPhysicsBody()->setVelocity(Vec2(velocity, player->getPhysicsBody()->getVelocity().y));
 
+	// 判断出界
+	if (player->getPositionY() < 0)
+		Director::getInstance()->replaceScene(LevelOne::createScene(0));
+
 	// 瞄准器控制
 	circle->setPosition(player->getPosition());
 	static int count = 0;
@@ -532,23 +536,14 @@ bool LevelOne::onContactBegan(PhysicsContact& contact) {
 			}
 		}
 
-		////  player碰怪物
-		//if (sp1 != NULL && sp2 != NULL)
-		//{
-		//	if ((sp1->getTag() == 0 && sp2->getTag() == 5) || (sp1->getTag() == 5 && sp2->getTag() == 0))
-		//	{
-		//		if (sp1 != NULL)
-		//		{
-		//			sp1->removeFromParentAndCleanup(true);
-		//			sp1 = NULL;
-		//		}
-		//		if (sp2 != NULL)
-		//		{
-		//			sp2->removeFromParentAndCleanup(true);
-		//			sp2 = NULL;
-		//		}
-		//	}
-		//}
+		// player碰怪物
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() == 0 && sp2->getTag() == 5) || (sp1->getTag() == 5 && sp2->getTag() == 0))
+			{
+				Director::getInstance()->replaceScene(LevelOne::createScene(0));
+			}
+		}
 
 		//  player碰钻石
 		if (sp1 != NULL && sp2 != NULL)

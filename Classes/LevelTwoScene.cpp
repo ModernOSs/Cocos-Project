@@ -43,11 +43,17 @@ bool LevelTwo::init() {
 }
 
 void LevelTwo::preloadMusic() {
-	// TODO
+	auto autio = SimpleAudioEngine::getInstance();
+	autio->preloadEffect("music/win.wav");
+	autio->preloadEffect("music/diamond.wav");
+	autio->preloadEffect("music/bullet.wav");
+	autio->preloadEffect("music/jump.mp3");
+	autio->preloadBackgroundMusic("music/bgm.mp3");
 }
 
 void LevelTwo::playBgm() {
-	// TODO
+	auto autio = SimpleAudioEngine::getInstance();
+	autio->playBackgroundMusic("music/bgm.mp3", true);
 }
 
 void LevelTwo::addBackground() {
@@ -379,6 +385,10 @@ void LevelTwo::update(float f) {
 	else
 		player->getPhysicsBody()->setVelocity(Vec2(velocity, player->getPhysicsBody()->getVelocity().y));
 
+	// 判断出界
+	if (player->getPositionY() < 0)
+		Director::getInstance()->replaceScene(LevelTwo::createScene(0));
+
 	// 瞄准器控制
 	circle->setPosition(player->getPosition());
 	static int count = 0;
@@ -408,13 +418,11 @@ void LevelTwo::update(float f) {
 		platform2[i + 2]->setPosition(platform2[i + 2]->getPosition() + Vec2(dir, 0));
 	}
 
-	if (player->getPositionY() < 0 || flag == 1) {
-		//Director::getInstance()->replaceScene(LevelTwo::createScene(3));
-	}
-
 	restartMenu->setPositionX(camera->getPosition().x - restartMenu->getContentSize().width * 1.9);
 
 	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
+		auto autio = SimpleAudioEngine::getInstance();
+		autio->playEffect("music/win.wav", false, 1.0f, 1.0f, 1.0f);
 		Sprite* board;
 		int score = 0;
 		for (int i = 0; i < 3; i++)
@@ -490,17 +498,16 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 		{
 			if ((sp1->getTag() == 8 && sp2->getTag() == 0) || (sp1->getTag() == 0 && sp2->getTag() == 8))
 			{
-				if (sp1 != NULL && sp1->getTag() == 8)
-				{
-					sp1->removeFromParentAndCleanup(true);
-					sp1 = NULL;
-				}
-				if (sp2 != NULL && sp2->getTag() == 8)
-				{
-					sp2->removeFromParentAndCleanup(true);
-					sp2 = NULL;
-				}
-				flag = 1;
+				Director::getInstance()->replaceScene(LevelTwo::createScene(0));
+			}
+		}
+
+		// player碰怪物1
+		if (sp1 != NULL && sp2 != NULL)
+		{
+			if ((sp1->getTag() ==5 && sp2->getTag() == 0) || (sp1->getTag() == 0 && sp2->getTag() == 5))
+			{
+				Director::getInstance()->replaceScene(LevelTwo::createScene(0));
 			}
 		}
 
@@ -509,6 +516,8 @@ bool LevelTwo::onContactBegan(PhysicsContact& contact) {
 		{
 			if ((sp1->getTag() == 0 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 0))
 			{
+				auto autio = SimpleAudioEngine::getInstance();
+				autio->playEffect("music/diamond.wav", false, 1.0f, 1.0f, 1.0f);
 				if (sp1 != NULL && sp1->getTag() == 7)
 				{
 					sp1->removeFromParentAndCleanup(true);
@@ -547,6 +556,8 @@ void LevelTwo::mouseClick(Event* event) {
 		bullet->setPosition(player->getPosition() + temp);
 		bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * 0.35, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
 		bullet->getPhysicsBody()->setGravityEnable(false);
+		auto autio = SimpleAudioEngine::getInstance();
+		autio->playEffect("music/bullet.wav", false, 1.0f, 1.0f, 1.0f);
 		bullet->getPhysicsBody()->setVelocity(temp * 8);
 		// 子弹的Tag为2
 		bullet->setTag(2);
@@ -593,6 +604,7 @@ void LevelTwo::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_W:
+		SimpleAudioEngine::getInstance()->playEffect("music/jump.mp3", false, 1.0f, 1.0f, 1.0f);
 		if ((int)player->getPhysicsBody()->getVelocity().y == 0 ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox())) {

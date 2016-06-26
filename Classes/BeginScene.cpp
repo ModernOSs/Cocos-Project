@@ -29,6 +29,10 @@ bool BeginScene::init(PhysicsWorld* world) {
 		return false;
 	}
 
+	auto autio = SimpleAudioEngine::getInstance();
+	autio->preloadBackgroundMusic("music/back.mp3");
+	autio->playBackgroundMusic("music/back.mp3", true);
+
 	left = true;
 	visibleSize = Director::getInstance()->getVisibleSize();
 

@@ -42,11 +42,17 @@ bool Wonderland::init() {
 }
 
 void Wonderland::preloadMusic() {
-    // TODO
+	auto autio = SimpleAudioEngine::getInstance();
+	autio->preloadEffect("music/win.wav");
+	autio->preloadEffect("music/diamond.wav");
+	autio->preloadEffect("music/bullet.wav");
+	autio->preloadEffect("music/jump.mp3");
+	autio->preloadBackgroundMusic("music/bgm.mp3");
 }
 
 void Wonderland::playBgm() {
-    // TODO
+	auto autio = SimpleAudioEngine::getInstance();
+	autio->playBackgroundMusic("music/bgm.mp3", true);
 }
 
 void Wonderland::addBackground() {
@@ -252,6 +258,10 @@ void Wonderland::update(float f) {
 	else
 		player->getPhysicsBody()->setVelocity(Vec2(velocity, player->getPhysicsBody()->getVelocity().y));
 
+	// 判断出界
+	if (player->getPositionY() < 0)
+		Director::getInstance()->replaceScene(Wonderland::createScene(0));
+
 	// 瞄准器控制
 	circle->setPosition(player->getPosition());
 	static int count = 0;
@@ -343,6 +353,8 @@ void Wonderland::update(float f) {
 	restartMenu->setPositionX(camera->getPosition().x - restartMenu->getContentSize().width * 1.9);
 
 	if (player->getBoundingBox().intersectsRect(exit->getBoundingBox())) {
+		auto autio = SimpleAudioEngine::getInstance();
+		autio->playEffect("music/win.wav", false, 1.0f, 1.0f, 1.0f);
 		Sprite* board;
 		this->unschedule(schedule_selector(Wonderland::update));
 		int score = 0;
@@ -409,6 +421,8 @@ bool Wonderland::onContactBegan(PhysicsContact& contact) {
 		{
 			if ((sp1->getTag() == 0 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 0))
 			{
+				auto autio = SimpleAudioEngine::getInstance();
+				autio->playEffect("music/diamond.wav", false, 1.0f, 1.0f, 1.0f);
 				if (sp1 != NULL && sp1->getTag() == 7)
 				{
 					sp1->removeFromParentAndCleanup(true);
@@ -466,6 +480,8 @@ void Wonderland::mouseClick(Event* event) {
 		bullet->setPosition(player->getPosition() + temp);
 		bullet->setPhysicsBody(PhysicsBody::createCircle(bullet->getContentSize().width * 0.35, PhysicsMaterial(1.0f, 1.0f, 0.0f)));
 		bullet->getPhysicsBody()->setGravityEnable(false);
+		auto autio = SimpleAudioEngine::getInstance();
+		autio->playEffect("music/bullet.wav", false, 1.0f, 1.0f, 1.0f);
 		bullet->getPhysicsBody()->setVelocity(temp * 8);
 		// 子弹的Tag为2
 		bullet->setTag(2);
@@ -506,6 +522,7 @@ void Wonderland::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 	case cocos2d::EventKeyboard::KeyCode::KEY_W:
+		SimpleAudioEngine::getInstance()->playEffect("music/jump.mp3", false, 1.0f, 1.0f, 1.0f);
 		if (player->getBoundingBox().intersectsRect(isPlayerOnGround[0]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[1]->getBoundingBox()) ||
 			player->getBoundingBox().intersectsRect(isPlayerOnGround[2]->getBoundingBox()))

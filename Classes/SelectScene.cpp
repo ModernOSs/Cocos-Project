@@ -30,6 +30,9 @@ bool SelectScene::init() {
 	if (!Layer::init()) {
 		return false;
 	}
+	auto autio = SimpleAudioEngine::getInstance();
+	autio->preloadBackgroundMusic("music/back.mp3");
+	autio->playBackgroundMusic("music/back.mp3", true);
 
 	visibleSize = Director::getInstance()->getVisibleSize();
 

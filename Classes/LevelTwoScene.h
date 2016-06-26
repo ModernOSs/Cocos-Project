@@ -38,7 +38,7 @@ private:
 	Size visibleSize;
 	Vec2 mousePosition = Vec2::ZERO;
 	double scale;
-	int flag = 0, count = 0;
+	int count = 0;
 	double cnt = 0, dir = 0.8;
 	bool doubleClick = false;
 	char lastcid = 'D';
