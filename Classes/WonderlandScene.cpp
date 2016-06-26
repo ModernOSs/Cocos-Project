@@ -362,7 +362,7 @@ void Wonderland::update(float f) {
 		this->addChild(board, 3);
 		restartMenu->setScale(scale, scale);
 		restartMenu->setPosition(board->getPositionX(), board->getPositionY() - restartMenu->getContentSize().width / 3);
-		Global::score = 2;
+		if (Global::score < 2) Global::score = 2;
 		if (score > Global::level_one_score) Global::level_one_score = score;
 	}
 
