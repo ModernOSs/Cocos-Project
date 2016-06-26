@@ -3,6 +3,7 @@
 using namespace std;
 #include "SelectScene.h"
 #include "SimpleAudioEngine.h"
+#include "Global.h"
 
 using namespace CocosDenshion;
 
@@ -429,6 +430,7 @@ void LevelTwo::update(float f) {
 		restartMenu->setScale(scale, scale);
 		restartMenu->setPosition(board->getPositionX(), board->getPositionY() - restartMenu->getContentSize().width / 3);
 		this->unschedule(schedule_selector(LevelTwo::update));
+		if (score > Global::level_three_score) Global::level_three_score = score;
 	}
 
 	for (int i = 0; i < 3; i++) {

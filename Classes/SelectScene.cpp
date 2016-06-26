@@ -69,11 +69,17 @@ bool SelectScene::init() {
 	}
 
 	for (int i = 1; i <= Global::score; i++) {
-		auto dia = Sprite::create("HUD//hudJewel_blue.png");
-		dia->setScale(size_scale * 0.6, size_scale * 0.6);
-		dia->setPosition(Vec2(vec2[i - 1].x, vec2[i - 1].y + dia->getContentSize().width * 0.32));
-		this->addChild(dia, 3);
-		diamond.pushBack(dia);
+		int temp = 0;
+		if (i == 1) temp = Global::level_one_score;
+		else if (i == 2) temp = Global::level_two_score;
+		else temp = Global::level_three_score;
+		for (int j = 0; j < temp; j++) {
+			auto dia = Sprite::create("HUD//hudJewel_blue.png");
+			dia->setScale(size_scale * 0.6, size_scale * 0.6);
+			dia->setPosition(Vec2(vec2[i - 1].x + (j - 1) * dia->getContentSize().width / 4, vec2[i - 1].y + dia->getContentSize().width * 0.32));
+			this->addChild(dia, 3);
+			diamond.pushBack(dia);
+		}
 	}
 
 	for (int i = Global::score; i < 9; i++) {

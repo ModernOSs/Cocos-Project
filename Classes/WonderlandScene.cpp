@@ -3,6 +3,7 @@
 #include <string>
 using namespace std;
 #include "SimpleAudioEngine.h"
+#include "Global.h"
 
 using namespace CocosDenshion;
 
@@ -361,6 +362,8 @@ void Wonderland::update(float f) {
 		this->addChild(board, 3);
 		restartMenu->setScale(scale, scale);
 		restartMenu->setPosition(board->getPositionX(), board->getPositionY() - restartMenu->getContentSize().width / 3);
+		Global::score = 2;
+		if (score > Global::level_one_score) Global::level_one_score = score;
 	}
 
 	for (int i = 0; i < 3; i++) {

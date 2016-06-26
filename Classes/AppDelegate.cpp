@@ -18,6 +18,7 @@ AppDelegate::AppDelegate() {
 
 AppDelegate::~AppDelegate() 
 {
+	Global::store();
 }
 
 //if you want a different context,just modify the value of glContextAttrs
@@ -80,6 +81,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
 	//Global::score = 1;
     // create a scene. it's an autorelease object
+	Global::load();
     auto scene = BeginScene::createScene();
     // run
     director->runWithScene(scene);
