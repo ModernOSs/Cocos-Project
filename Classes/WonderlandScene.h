@@ -42,6 +42,7 @@ private:
 
 	// ¶¯»­
 	int keyCount = 0;
+	int score = 0;
 	Animation *animation_stand;
 	Animate *action_stand;
 	Animation *animation_walk;

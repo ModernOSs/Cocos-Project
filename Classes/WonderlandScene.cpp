@@ -8,7 +8,7 @@ using namespace CocosDenshion;
 
 Scene* Wonderland::createScene(int game) {
     auto scene = Scene::createWithPhysics();
-    // scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+    //scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	scene->getPhysicsWorld()->setGravity(Vec2(0, -2940));
 	scene->getPhysicsWorld()->setAutoStep(false);
 
@@ -93,15 +93,6 @@ void Wonderland::addBackground() {
 	//Ìí¼Ó×êÊ¯
 	for (int i = 0; i < 3; i++) {
 		auto dia = Sprite::create("HUD//hudJewel_blue.png");
-		dia->setPhysicsBody(PhysicsBody::createBox(Size(dia->getContentSize().width*0.8,
-			dia->getContentSize().height*0.8),
-			PhysicsMaterial(0.0f, 0.0f, 0.0f),
-			Vec2(0, -dia->getContentSize().height * 0.1)));
-		dia->getPhysicsBody()->setDynamic(false);
-		dia->setTag(7);
-		dia->getPhysicsBody()->setCategoryBitmask(0xFF);
-		dia->getPhysicsBody()->setCollisionBitmask(0xFF);
-		dia->getPhysicsBody()->setContactTestBitmask(0xFF);
 		dia->setScale(scale, scale);
 		diamond[i] = dia;
 	}
@@ -357,7 +348,7 @@ void Wonderland::update(float f) {
 		autio->playEffect("music/win.wav", false, 1.0f, 1.0f, 1.0f);
 		Sprite* board;
 		this->unschedule(schedule_selector(Wonderland::update));
-		int score = 0;
+		score = 0;
 		for (int i = 0; i < 3; i++)
 			if (diamond[i] == NULL)
 				score++;
@@ -370,6 +361,14 @@ void Wonderland::update(float f) {
 		this->addChild(board, 3);
 		restartMenu->setScale(scale, scale);
 		restartMenu->setPosition(board->getPositionX(), board->getPositionY() - restartMenu->getContentSize().width / 3);
+	}
+
+	for (int i = 0; i < 3; i++) {
+		if (diamond[i] != NULL && diamond[i]->getBoundingBox().intersectsRect(Rect(player->getPositionX(), player->getPositionY(),
+			                                                                       player->getBoundingBox().size.width, player->getBoundingBox().size.height * 0.6))) {
+			diamond[i]->removeFromParentAndCleanup(true);
+			diamond[i] = NULL;
+		}
 	}
 }
 
@@ -412,26 +411,6 @@ bool Wonderland::onContactBegan(PhysicsContact& contact) {
 							sp2 = NULL;
 						}
 					isChainBroken = 1;
-				}
-			}
-		}
-
-		// playerÅö×êÊ¯
-		if (sp1 != NULL && sp2 != NULL)
-		{
-			if ((sp1->getTag() == 0 && sp2->getTag() == 7) || (sp1->getTag() == 7 && sp2->getTag() == 0))
-			{
-				auto autio = SimpleAudioEngine::getInstance();
-				autio->playEffect("music/diamond.wav", false, 1.0f, 1.0f, 1.0f);
-				if (sp1 != NULL && sp1->getTag() == 7)
-				{
-					sp1->removeFromParentAndCleanup(true);
-					sp1 = NULL;
-				}
-				if (sp2 != NULL && sp2->getTag() == 7)
-				{
-					sp2->removeFromParentAndCleanup(true);
-					sp2 = NULL;
 				}
 			}
 		}

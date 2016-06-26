@@ -197,15 +197,6 @@ void LevelTwo::addBackground() {
 	//Ìí¼Ó×êÊ¯
 	for (int i = 0; i < 3; i++) {
 		auto dia = Sprite::create("HUD//hudJewel_blue.png");
-		dia->setPhysicsBody(PhysicsBody::createBox(Size(dia->getContentSize().width * 0.8,
-			dia->getContentSize().height * 0.8),
-			PhysicsMaterial(0.0f, 0.0f, 0.0f),
-			Vec2(0, -dia->getContentSize().height * 0.1)));
-		dia->getPhysicsBody()->setDynamic(false);
-		dia->setTag(7);
-		dia->getPhysicsBody()->setCategoryBitmask(0xF0);
-		dia->getPhysicsBody()->setCollisionBitmask(0xF0);
-		dia->getPhysicsBody()->setContactTestBitmask(0xFF);
 		dia->setScale(scale, scale);
 		diamond[i] = dia;
 	}
@@ -271,7 +262,7 @@ void LevelTwo::addEnemies() {
 
 
 	//  ¹ÖÎï2
-	enemies2[0] = Sprite::create("slimeBlock.png");
+	enemies2[0] = Sprite::create("slimeBlock0.png");
 	enemies2[0]->setScale(scale);
 	enemies2[0]->setPosition(ground[7]->getPosition() + Vec2(ground[0]->getContentSize().width * scale * 0.5, ground[0]->getContentSize().height * scale));
 	enemies2[0]->setTag(5);
@@ -438,6 +429,14 @@ void LevelTwo::update(float f) {
 		restartMenu->setScale(scale, scale);
 		restartMenu->setPosition(board->getPositionX(), board->getPositionY() - restartMenu->getContentSize().width / 3);
 		this->unschedule(schedule_selector(LevelTwo::update));
+	}
+
+	for (int i = 0; i < 3; i++) {
+		if (diamond[i] != NULL && diamond[i]->getBoundingBox().intersectsRect(Rect(player->getPositionX(), player->getPositionY(),
+			player->getBoundingBox().size.width, player->getBoundingBox().size.height * 0.6))) {
+			diamond[i]->removeFromParentAndCleanup(true);
+			diamond[i] = NULL;
+		}
 	}
 }
 
